@@ -1,7 +1,7 @@
 # learn-viewer 
 
 ## Transpiling
-run tsc -w to transpile typescript files into public/js 
+It is required to have tsc globally installed (npm install -g typescript), then you can use the command "tsc -w" to transpile files found in "src" folder into the "public/js" folder. The -w option is to keep watching the folder
 
 ## Serving
-run node app.js to serve the public folder
+Run "node app.js" to serve the public folder using expressjs
