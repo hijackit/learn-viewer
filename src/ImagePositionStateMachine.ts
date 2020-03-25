@@ -8,10 +8,11 @@ class ImagePositionStateMachine {
     initialDragY: number = 0;
 
     dragStart(x: number, y: number) {
-        // save the initial image position
+        // save the current image position
         this.txBeforeDrag = this.tx;
         this.tyBeforeDrag = this.ty;
-        // save the initial mouse position
+        
+        // save the current mouse position
         this.initialDragX = x;
         this.initialDragY = y;
     }

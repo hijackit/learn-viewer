@@ -82,28 +82,4 @@ canvas.onmouseup = (evt) => {
     }
     dragging = false;
 };
-canvas.onwheel = (event) => {
-    event.preventDefault();
-    //console.log(event.offsetX, event.offsetY)
-    let newScale = position.scale;
-    newScale += event.deltaY * -0.002;
-    // Restrict scale
-    newScale = Math.min(Math.max(.125, newScale), 4);
-    let imageWidthPreScale = image.width * position.scale;
-    let imageWidthPostScale = image.width * newScale;
-    let imageHeightPreScale = image.height * position.scale;
-    let imageHeightPostScale = image.height * newScale;
-    let zoomPointX = (event.offsetX / position.scale) + (event.offsetX / position.scale);
-    console.log(zoomPointX);
-    let scaleDelta = newScale - position.scale;
-    let offsetX = -(zoomPointX * scaleDelta);
-    //let offsetY = -(event.offsetY * scaleDelta);
-    // console.log('image width pre/post scale', imageWidthPreScale, imageWidthPostScale)
-    // let deltaX = (imageWidthPreScale - imageWidthPostScale)/2 - event.offsetX;
-    // let deltaY = (imageHeightPreScale - imageHeightPostScale)/2;
-    // Apply scale transform
-    position.scale = newScale;
-    position.tx += offsetX;
-    // position.ty += offsetY;
-};
 //# sourceMappingURL=main.js.map

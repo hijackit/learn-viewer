@@ -1,1 +1,1 @@
-test 
+This is a static file, again
