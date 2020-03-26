@@ -1,6 +1,7 @@
-import { ImagePositionStateMachine } from "./ImagePositionStateMachine.js";
+import { ImagePositionStateMachine } from "./ImagePositionStateMachine";
+import {scale, rotate, translate, compose, applyToPoint} from 'transformation-matrix';
 
-console.log('hello from typescript, hola there!')
+console.log('hello from typescript, hola there!', 'great')
 
 const thumbnailA = document.getElementById('thumbnail-A');
 const thumbnailB = document.getElementById('thumbnail-B');
@@ -13,6 +14,14 @@ canvas.width = canvas.scrollWidth
 canvas.height = canvas.scrollHeight
 
 let ctx = canvas.getContext('2d')!;
+
+let matrix = compose(
+    translate(40,40),
+    rotate(Math.PI/2),
+    scale(2, 4)
+  );
+
+console.log(matrix)
 
 let image: ImageBitmap|null;
 let position:ImagePositionStateMachine = new ImagePositionStateMachine();
@@ -106,4 +115,37 @@ canvas.onmouseup = (evt) => {
     }
 
     dragging = false;
+}
+
+canvas.onwheel = (event) => {
+    event.preventDefault();
+    //console.log(event.offsetX, event.offsetY)
+
+    let newScale = position.scale;
+    newScale += event.deltaY * -0.002;
+
+    // Restrict scale
+    newScale = Math.min(Math.max(.125, newScale), 4);
+    
+    let imageWidthPreScale = image!.width * position.scale;
+    let imageWidthPostScale = image!.width * newScale;
+
+    let imageHeightPreScale = image!.height * position.scale;
+    let imageHeightPostScale = image!.height * newScale;
+
+    let pointOnZoomed = (event.offsetX / position.scale);
+    let zoomPointX =  pointOnZoomed - event.offsetY 
+    console.log(zoomPointX)
+
+    let scaleDelta = newScale - position.scale;
+    let offsetX = -(zoomPointX * scaleDelta);
+    //let offsetY = -(event.offsetY * scaleDelta);
+    // console.log('image width pre/post scale', imageWidthPreScale, imageWidthPostScale)
+    // let deltaX = (imageWidthPreScale - imageWidthPostScale)/2 - event.offsetX;
+    // let deltaY = (imageHeightPreScale - imageHeightPostScale)/2;
+
+    // Apply scale transform
+    position.scale = newScale;
+    position.tx += offsetX;
+    // position.ty += offsetY;
 }

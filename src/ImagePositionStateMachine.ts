@@ -8,6 +8,7 @@ class ImagePositionStateMachine {
     initialDragY: number = 0;
 
     dragStart(x: number, y: number) {
+        console.log('test')
         // save the initial image position
         this.txBeforeDrag = this.tx;
         this.tyBeforeDrag = this.ty;
