@@ -1,5 +1,5 @@
 import { ImagePositionStateMachine } from "./ImagePositionStateMachine";
-import {scale, rotate, translate, compose, applyToPoint, Point, inverse, Matrix} from 'transformation-matrix';
+import {scale, rotate, translate, compose, applyToPoint, Point, inverse, Matrix, transform} from 'transformation-matrix';
 
 console.log('hello from typescript, hola there!', 'great')
 
@@ -34,8 +34,6 @@ thumbnailE!.onclick = () => {
     open('images/camping.jpg')
 }
 
-let itmatrix:Matrix;
-
 function open(url:string) {
     fetch(url)
     .then(response => response.blob())
@@ -64,7 +62,7 @@ function open(url:string) {
 
         let imageCenter = {x: image.width/2, y: image.height/2}
 
-        let newCenter = applyToPoint(matrix, imageCenter);
+        let newCenter:Point = applyToPoint(matrix, imageCenter);
         console.log('center', imageCenter, newCenter)
 
         let canvasCenter = {x: canvas!.width/2, y:canvas!.height/2}
@@ -76,18 +74,10 @@ function open(url:string) {
         let ty = canvasCenter.y - newCenter.y;
 
         let tmatrix = compose(translate(tx, ty), scale(mms))
-        itmatrix = inverse(tmatrix)
+        let itmatrix = inverse(tmatrix)
 
         position.tx = tx;
         position.ty = ty;
-
-
-        // let canvasCenterX = canvas!.width/2;
-        // let canvasCenterY = canvas!.height/2;
-
-        // position.tx = canvasCenterX - imageCenterX;
-        // position.ty = canvasCenterY - imageCenterY;
-
         console.log('image position', position)
     })
 }
@@ -98,6 +88,7 @@ function render() {
     if(image == null)
         return;
 
+        console.log('rendering')
     ctx.fillRect(0,0,ctx.canvas.width, ctx.canvas.height);
 
     let width = image.width * position.scale
@@ -138,7 +129,7 @@ canvas.onmouseup = (evt) => {
 
     } else {
         console.log('click', evt.offsetX, evt.offsetY)
-        console.log(applyToPoint(itmatrix, [evt.offsetX, evt.offsetY]))
+        console.log(position.toImagePoint([evt.offsetX, evt.offsetY]))
     }
 
     dragging = false;
@@ -151,22 +142,15 @@ canvas.onwheel = (event) => {
 
     let newScale = position.scale;
     newScale += event.deltaY * -0.002;
-    
-    let imageZoomPoint = applyToPoint(itmatrix, zoomPoint);
+
+    let imageZoomPoint = position.toImagePoint(zoomPoint);
     console.log('zoomPoint on image', imageZoomPoint)
 
-    let matrix = compose(translate(position.tx, position.ty), scale(newScale))
-    let pointAfterZoom = applyToPoint(matrix, imageZoomPoint)
+    position.scale = newScale;
+    let pointAfterZoom = position.toCanvasPoint(imageZoomPoint);
     console.log('canvas zoomPoint after zoom', pointAfterZoom)
 
-    let offsetX = pointAfterZoom.x - zoomPoint.x;
-    let offsetY = pointAfterZoom.y - zoomPoint.y;
-
-    console.log('offset x', offsetX)
-
     position.scale = newScale;
-    position.tx -= offsetX;
-    position.ty -= offsetY;
-
-    console.log('new tx', position.tx)
+    position.tx -= pointAfterZoom.x - zoomPoint.x;
+    position.ty -= pointAfterZoom.y - zoomPoint.y;
 }

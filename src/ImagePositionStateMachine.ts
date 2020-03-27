@@ -1,3 +1,5 @@
+import { translate, compose, scale, Matrix, Point, applyToPoint, inverse } from "transformation-matrix";
+
 class ImagePositionStateMachine {
     tx: number = 0;
     ty: number = 0;
@@ -23,6 +25,23 @@ class ImagePositionStateMachine {
         this.tx = deltaX + this.txBeforeDrag;
         this.ty = deltaY + this.tyBeforeDrag;
     }
+
+    /**
+     * Given a point on screen canvas, return the point on the image
+     */
+    toImagePoint(point:Point):Point {
+        let matrix = inverse(compose(translate(this.tx, this.ty), scale(this.scale)))
+        return applyToPoint(matrix, point);
+    }
+
+    /**
+     * Given a point on the image, return the point on screen canvas
+     */
+    toCanvasPoint(point:Point):Point{
+        let matrix = compose(translate(this.tx, this.ty), scale(this.scale));
+        return applyToPoint(matrix, point);
+    }
+
 }
 
 export {ImagePositionStateMachine};
