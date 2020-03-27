@@ -1,5 +1,5 @@
 import { ImagePositionStateMachine } from "./ImagePositionStateMachine";
-import {scale, rotate, translate, compose, applyToPoint} from 'transformation-matrix';
+import {scale, rotate, translate, compose, applyToPoint, Point, inverse, Matrix} from 'transformation-matrix';
 
 console.log('hello from typescript, hola there!', 'great')
 
@@ -14,14 +14,6 @@ canvas.width = canvas.scrollWidth
 canvas.height = canvas.scrollHeight
 
 let ctx = canvas.getContext('2d')!;
-
-let matrix = compose(
-    translate(40,40),
-    rotate(Math.PI/2),
-    scale(2, 4)
-  );
-
-console.log(matrix)
 
 let image: ImageBitmap|null;
 let position:ImagePositionStateMachine = new ImagePositionStateMachine();
@@ -42,27 +34,61 @@ thumbnailE!.onclick = () => {
     open('images/camping.jpg')
 }
 
+let itmatrix:Matrix;
+
 function open(url:string) {
     fetch(url)
     .then(response => response.blob())
     .then(blob => createImageBitmap(blob))
     .then(retrievedBitmap => {
         image = retrievedBitmap;
-        
+
+        console.log("image", image.width, image.height)
+        console.log("canvas", canvas!.width, canvas!.height)
 
         let scaleX = canvas!.width/image.width;
         let scaleY = canvas!.height/image.height;
+        let minScale = scaleX < scaleY ? scaleX : scaleY;
+        
+        let msx = canvas!.width/image.width;
+        let msy = canvas!.height/image.height;
+        let mms = msx < msy ? msx : msy;
+        let matrix = scale(mms);
+        console.log('matrixMinScale',mms)
+        console.log("scale matrix", matrix)
 
-        position.scale = scaleX < scaleY ? scaleX : scaleY;
+        position.scale = minScale;
 
         let imageCenterX = image.width*position.scale/2;
         let imageCenterY = image.height*position.scale/2;
 
-        let canvasCenterX = canvas!.width/2;
-        let canvasCenterY = canvas!.height/2;
+        let imageCenter = {x: image.width/2, y: image.height/2}
 
-        position.tx = canvasCenterX - imageCenterX;
-        position.ty = canvasCenterY - imageCenterY;
+        let newCenter = applyToPoint(matrix, imageCenter);
+        console.log('center', imageCenter, newCenter)
+
+        let canvasCenter = {x: canvas!.width/2, y:canvas!.height/2}
+        let imatrix = inverse(matrix);
+        let newCanvasCenter = applyToPoint(imatrix, canvasCenter);
+        console.log('canvas center', canvasCenter, newCanvasCenter)
+
+        let tx = canvasCenter.x - newCenter.x;
+        let ty = canvasCenter.y - newCenter.y;
+
+        let tmatrix = compose(translate(tx, ty), scale(mms))
+        itmatrix = inverse(tmatrix)
+
+        position.tx = tx;
+        position.ty = ty;
+
+
+        // let canvasCenterX = canvas!.width/2;
+        // let canvasCenterY = canvas!.height/2;
+
+        // position.tx = canvasCenterX - imageCenterX;
+        // position.ty = canvasCenterY - imageCenterY;
+
+        console.log('image position', position)
     })
 }
 
@@ -111,7 +137,8 @@ canvas.onmouseup = (evt) => {
         console.log('stop dragging')
 
     } else {
-        console.log('click!')
+        console.log('click', evt.offsetX, evt.offsetY)
+        console.log(applyToPoint(itmatrix, [evt.offsetX, evt.offsetY]))
     }
 
     dragging = false;
@@ -119,33 +146,27 @@ canvas.onmouseup = (evt) => {
 
 canvas.onwheel = (event) => {
     event.preventDefault();
-    //console.log(event.offsetX, event.offsetY)
+    let zoomPoint = {x:event.offsetX, y:event.offsetY}
+    console.log('zoomPoint on canvas', zoomPoint)
 
     let newScale = position.scale;
     newScale += event.deltaY * -0.002;
-
-    // Restrict scale
-    newScale = Math.min(Math.max(.125, newScale), 4);
     
-    let imageWidthPreScale = image!.width * position.scale;
-    let imageWidthPostScale = image!.width * newScale;
+    let imageZoomPoint = applyToPoint(itmatrix, zoomPoint);
+    console.log('zoomPoint on image', imageZoomPoint)
 
-    let imageHeightPreScale = image!.height * position.scale;
-    let imageHeightPostScale = image!.height * newScale;
+    let matrix = compose(translate(position.tx, position.ty), scale(newScale))
+    let pointAfterZoom = applyToPoint(matrix, imageZoomPoint)
+    console.log('canvas zoomPoint after zoom', pointAfterZoom)
 
-    let pointOnZoomed = (event.offsetX / position.scale);
-    let zoomPointX =  pointOnZoomed - event.offsetY 
-    console.log(zoomPointX)
+    let offsetX = pointAfterZoom.x - zoomPoint.x;
+    let offsetY = pointAfterZoom.y - zoomPoint.y;
 
-    let scaleDelta = newScale - position.scale;
-    let offsetX = -(zoomPointX * scaleDelta);
-    //let offsetY = -(event.offsetY * scaleDelta);
-    // console.log('image width pre/post scale', imageWidthPreScale, imageWidthPostScale)
-    // let deltaX = (imageWidthPreScale - imageWidthPostScale)/2 - event.offsetX;
-    // let deltaY = (imageHeightPreScale - imageHeightPostScale)/2;
+    console.log('offset x', offsetX)
 
-    // Apply scale transform
     position.scale = newScale;
-    position.tx += offsetX;
-    // position.ty += offsetY;
+    position.tx -= offsetX;
+    position.ty -= offsetY;
+
+    console.log('new tx', position.tx)
 }
