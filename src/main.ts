@@ -12,6 +12,7 @@ canvas.height = canvas.scrollHeight
 
 let ctx = canvas.getContext('2d')!;
 
+
 thumbnailA!.onclick = () => {
     open('images/hand_0.jpg')
 }
@@ -29,6 +30,13 @@ thumbnailE!.onclick = () => {
 }
 
 let panel = new Panel(canvas);
+
+document.addEventListener('keydown', (e) => {
+    if (e.code === "ArrowLeft")
+        panel.rotate(-10)
+    else if (e.code === "ArrowRight") 
+        panel.rotate(10)
+  });
 
 function open(url:string) {
     fetch(url)

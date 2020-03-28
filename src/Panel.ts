@@ -1,4 +1,4 @@
-import { scale, applyToPoint, Point, inverse, compose, translate } from "transformation-matrix";
+import { scale, applyToPoint, Point, inverse, compose, translate, rotate, Matrix, rotateDEG } from "transformation-matrix";
 import { MouseHandler, ActionListener, DragEvent } from "./MouseHandler";
 
 class Panel implements ActionListener {
@@ -8,6 +8,7 @@ class Panel implements ActionListener {
   imageTx: number = 0;
   imageTy: number = 0;
   imageScale: number = 1;
+  imageRotation: number = 0; //degrees
 
   constructor(canvas:HTMLCanvasElement) {
     this.canvas = canvas;
@@ -20,9 +21,8 @@ class Panel implements ActionListener {
   }
 
   onDrag(drag:DragEvent) {
-    console.log('drag', drag.lastDragEventDeltaX)
     this.imageTx += drag.lastDragEventDeltaX;
-    this.imageTy += drag.lastDragEventDeltaY;
+    this.imageTy += drag.lastDragEventDeltaY
   }
 
   onWheel(x:number, y:number, delta:number) {
@@ -56,6 +56,11 @@ class Panel implements ActionListener {
     this.imageTy -= canvasPointAfterZoom.y - canvasZoomPoint.y;
   }
 
+  rotate(degree: number) {
+    console.log('should rotate')
+    this.imageRotation += degree;
+  }
+
   setImage(image:ImageBitmap) {
     this.image = image;
   }
@@ -86,13 +91,25 @@ class Panel implements ActionListener {
     this.imageTx = tx;
     this.imageTy = ty;
     this.imageScale = newScale;
+    this.imageRotation = 0;
+  }
+
+  /**
+   * Return the 'image to canvas' transformation matrix
+   */
+  getTransformationMatrix():Matrix {
+    return compose(
+      translate(this.imageTx, this.imageTy), 
+      rotate(this.imageRotation*Math.PI/180),
+      scale(this.imageScale), 
+    )
   }
 
   /**
    * Given a point on screen canvas, return the point on the image
    */
   toImagePoint(canvasPoint:Point): Point {
-    let matrix = inverse(compose(translate(this.imageTx, this.imageTy), scale(this.imageScale)))
+    let matrix = inverse(this.getTransformationMatrix())
     return applyToPoint(matrix, canvasPoint);
   }
 
@@ -100,7 +117,7 @@ class Panel implements ActionListener {
    * Given a point on the image, return the point on canvas
    */
   toCanvasPoint(imagePoint:Point):Point{
-      let matrix = compose(translate(this.imageTx, this.imageTy), scale(this.imageScale));
+      let matrix = this.getTransformationMatrix();
       return applyToPoint(matrix, imagePoint);
   }
 
@@ -110,10 +127,27 @@ class Panel implements ActionListener {
     if (this.image == null) {
       return;
     }
+    ctx.save()
+    
+    ctx.translate(this.imageTx, this.imageTy);
+    ctx.rotate(this.imageRotation*Math.PI/180);
+    ctx.scale(this.imageScale, this.imageScale);
 
-    let width = this.image.width * this.imageScale;
-    let height = this.image.height * this.imageScale;
-    ctx.drawImage(this.image, this.imageTx, this.imageTy, width, height); 
+    ctx.drawImage(this.image,0, 0); 
+    ctx.restore()
+
+    // draw crosshair
+    ctx.save()
+    ctx.strokeStyle = '#ff0000';
+    ctx.beginPath();
+    ctx.moveTo(ctx.canvas.width/2-15, ctx.canvas.width/2);
+    ctx.lineTo(ctx.canvas.width/2+15, ctx.canvas.width/2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ctx.canvas.width/2, ctx.canvas.width/2-15);
+    ctx.lineTo(ctx.canvas.width/2, ctx.canvas.width/2+15);
+    ctx.stroke();
+    ctx.restore();
   }
 }
 

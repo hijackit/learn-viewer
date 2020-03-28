@@ -59,13 +59,17 @@ class DragEvent {
   readonly x:number;
   readonly y:number;
 
-  // delta from the last drag event
-  readonly lastDragEventDeltaX:number = 0;
-  readonly lastDragEventDeltaY:number = 0;
+  // coordinates of the initial drag event
+  readonly initialDragEventX:number = 0;
+  readonly initialDragEventY:number = 0;
 
   // distance from the initial drag event
   readonly initialDragEventDeltaX:number = 0;
   readonly initialDragEventDeltaY:number = 0;
+
+  // delta from the last drag event
+  readonly lastDragEventDeltaX:number = 0;
+  readonly lastDragEventDeltaY:number = 0;
 
   constructor(type:"START"|"DRAG"|"STOP", x:number, y:number, initialDrag:DragEvent|null, lastDrag:DragEvent|null) {
     this.x = x;
@@ -73,6 +77,8 @@ class DragEvent {
     this.type = type;
 
     if(initialDrag != null) {
+      this.initialDragEventX = initialDrag.x;
+      this.initialDragEventY = initialDrag.y;
       this.initialDragEventDeltaX = this.x - initialDrag.x;
       this.initialDragEventDeltaY = this.y - initialDrag.y;
     }
