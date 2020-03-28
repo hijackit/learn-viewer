@@ -21,16 +21,20 @@ class Panel implements ActionListener {
   }
 
   onDrag(drag:DragEvent) {
-    this.imageTx += drag.lastDragEventDeltaX;
-    this.imageTy += drag.lastDragEventDeltaY
+    let rotationMatrix = inverse(rotateDEG(this.imageRotation))
+    let rotatedPoint = applyToPoint(rotationMatrix, [drag.lastDragEventDeltaX, drag.lastDragEventDeltaY])
+
+    this.imageTx += rotatedPoint[0];
+    this.imageTy += rotatedPoint[1];
   }
 
   onWheel(x:number, y:number, delta:number) {
     console.log('wheel', delta)
+    let imagePoint = this.toImagePoint({x, y})
     if(delta > 0) {
-      this.zoom(-20, x, y);
+      this.zoomOnImage(-20, imagePoint.x, imagePoint.y);
     } else {
-      this.zoom(20, x, y);
+      this.zoomOnImage(+20, imagePoint.x, imagePoint.y);
     }
   }
 
@@ -46,14 +50,25 @@ class Panel implements ActionListener {
     let newScale = this.imageScale + deltaScale;
 
     let imageZoomPoint = this.toImagePoint(canvasZoomPoint);
+    console.log('zooming on', imageZoomPoint)
     
     // first change the scale, then we can compute the point on canvas after zoom
     this.imageScale = newScale;
     let canvasPointAfterZoom = this.toCanvasPoint(imageZoomPoint);
+    console.log('zoomed point after zoom', canvasPointAfterZoom)
 
     // translate back the image
-    this.imageTx -= canvasPointAfterZoom.x - canvasZoomPoint.x;
-    this.imageTy -= canvasPointAfterZoom.y - canvasZoomPoint.y;
+    // this.imageTx -= canvasPointAfterZoom.x - canvasZoomPoint.x;
+    // this.imageTy -= canvasPointAfterZoom.y - canvasZoomPoint.y;
+
+    let deltaX = canvasPointAfterZoom.x - canvasZoomPoint.x;
+    let deltaY = canvasPointAfterZoom.y - canvasZoomPoint.y;
+    let rotationMatrix = inverse(rotateDEG(this.imageRotation))
+    let rotatedPoint = applyToPoint(rotationMatrix, [deltaX, deltaY])
+
+    this.imageTx -= rotatedPoint[0];
+    this.imageTy -= rotatedPoint[1];
+    console.log('scale', this.imageScale)
   }
 
   rotate(degree: number) {
@@ -99,8 +114,8 @@ class Panel implements ActionListener {
    */
   getTransformationMatrix():Matrix {
     return compose(
-      translate(this.imageTx, this.imageTy), 
-      rotate(this.imageRotation*Math.PI/180),
+      rotate(this.imageRotation*Math.PI/180, this.canvas.width/2, this.canvas.height/2),
+      translate(this.imageTx, this.imageTy),
       scale(this.imageScale), 
     )
   }
@@ -128,9 +143,27 @@ class Panel implements ActionListener {
       return;
     }
     ctx.save()
-    
-    ctx.translate(this.imageTx, this.imageTy);
+
+
+    // rotation
+    ctx.translate(this.canvas.width/2, this.canvas.height/2 );
     ctx.rotate(this.imageRotation*Math.PI/180);
+    ctx.strokeStyle = '#ff0000';
+    ctx.beginPath();
+    ctx.moveTo(1, 1);
+    ctx.lineTo(20, 1);
+    ctx.stroke();
+    ctx.globalAlpha = 0.5;
+    ctx.translate(-this.canvas.width/2, -this.canvas.height/2);
+
+    // translation
+    ctx.translate(this.imageTx, this.imageTy);
+    ctx.strokeStyle = '#FF0000';
+    ctx.beginPath();
+    ctx.moveTo(1, 1);
+    ctx.lineTo(this.canvas.width, 1);
+    ctx.stroke();
+
     ctx.scale(this.imageScale, this.imageScale);
 
     ctx.drawImage(this.image,0, 0); 
@@ -140,12 +173,12 @@ class Panel implements ActionListener {
     ctx.save()
     ctx.strokeStyle = '#ff0000';
     ctx.beginPath();
-    ctx.moveTo(ctx.canvas.width/2-15, ctx.canvas.width/2);
-    ctx.lineTo(ctx.canvas.width/2+15, ctx.canvas.width/2);
+    ctx.moveTo(ctx.canvas.width/2 -15, ctx.canvas.height/2);
+    ctx.lineTo(ctx.canvas.width/2 +15, ctx.canvas.height/2);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(ctx.canvas.width/2, ctx.canvas.width/2-15);
-    ctx.lineTo(ctx.canvas.width/2, ctx.canvas.width/2+15);
+    ctx.moveTo(ctx.canvas.width/2, ctx.canvas.height/2-15);
+    ctx.lineTo(ctx.canvas.width/2, ctx.canvas.height/2+15);
     ctx.stroke();
     ctx.restore();
   }
