@@ -20,12 +20,15 @@ class Panel implements ActionListener {
     console.log('clicked on', x, y, imagePoint)
   }
 
-  onDrag(drag:DragEvent) {
+  translate(deltaX:number, deltaY:number) {
     let rotationMatrix = inverse(rotateDEG(this.imageRotation))
-    let rotatedPoint = applyToPoint(rotationMatrix, [drag.lastDragEventDeltaX, drag.lastDragEventDeltaY])
-
+    let rotatedPoint = applyToPoint(rotationMatrix, [deltaX, deltaY])
     this.imageTx += rotatedPoint[0];
     this.imageTy += rotatedPoint[1];
+  }
+
+  onDrag(drag:DragEvent) {
+    this.translate(drag.lastDragEventDeltaX, drag.lastDragEventDeltaY)
   }
 
   onWheel(x:number, y:number, delta:number) {
@@ -55,20 +58,12 @@ class Panel implements ActionListener {
     // first change the scale, then we can compute the point on canvas after zoom
     this.imageScale = newScale;
     let canvasPointAfterZoom = this.toCanvasPoint(imageZoomPoint);
-    console.log('zoomed point after zoom', canvasPointAfterZoom)
 
     // translate back the image
-    // this.imageTx -= canvasPointAfterZoom.x - canvasZoomPoint.x;
-    // this.imageTy -= canvasPointAfterZoom.y - canvasZoomPoint.y;
-
     let deltaX = canvasPointAfterZoom.x - canvasZoomPoint.x;
     let deltaY = canvasPointAfterZoom.y - canvasZoomPoint.y;
-    let rotationMatrix = inverse(rotateDEG(this.imageRotation))
-    let rotatedPoint = applyToPoint(rotationMatrix, [deltaX, deltaY])
 
-    this.imageTx -= rotatedPoint[0];
-    this.imageTy -= rotatedPoint[1];
-    console.log('scale', this.imageScale)
+    this.translate(-deltaX, -deltaY)
   }
 
   rotate(degree: number) {
@@ -138,49 +133,24 @@ class Panel implements ActionListener {
 
   render(ctx:CanvasRenderingContext2D) {
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
     if (this.image == null) {
       return;
     }
     ctx.save()
 
-
     // rotation
     ctx.translate(this.canvas.width/2, this.canvas.height/2 );
     ctx.rotate(this.imageRotation*Math.PI/180);
-    ctx.strokeStyle = '#ff0000';
-    ctx.beginPath();
-    ctx.moveTo(1, 1);
-    ctx.lineTo(20, 1);
-    ctx.stroke();
-    ctx.globalAlpha = 0.5;
     ctx.translate(-this.canvas.width/2, -this.canvas.height/2);
 
     // translation
     ctx.translate(this.imageTx, this.imageTy);
-    ctx.strokeStyle = '#FF0000';
-    ctx.beginPath();
-    ctx.moveTo(1, 1);
-    ctx.lineTo(this.canvas.width, 1);
-    ctx.stroke();
 
+    // scale
     ctx.scale(this.imageScale, this.imageScale);
 
     ctx.drawImage(this.image,0, 0); 
     ctx.restore()
-
-    // draw crosshair
-    ctx.save()
-    ctx.strokeStyle = '#ff0000';
-    ctx.beginPath();
-    ctx.moveTo(ctx.canvas.width/2 -15, ctx.canvas.height/2);
-    ctx.lineTo(ctx.canvas.width/2 +15, ctx.canvas.height/2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(ctx.canvas.width/2, ctx.canvas.height/2-15);
-    ctx.lineTo(ctx.canvas.width/2, ctx.canvas.height/2+15);
-    ctx.stroke();
-    ctx.restore();
   }
 }
 
