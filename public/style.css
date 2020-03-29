@@ -74,3 +74,8 @@ body {
 .toolbar-button:hover {
     background-color: #222;
 }
+
+.toolbar-button.selected {  
+    background-color: #933;
+    color: #FFF;
+}

@@ -1,7 +1,12 @@
 import { scale, applyToPoint, Point, inverse, compose, translate, rotate, Matrix, rotateDEG } from "transformation-matrix";
 import { MouseHandler, ActionListener, DragEvent } from "./MouseHandler";
 
+enum Tool {
+  PAN, ZOOM, ROTATE
+}
+
 class Panel implements ActionListener {
+  id:number;
   canvas:HTMLCanvasElement;
   mouseHandler:MouseHandler;
   image:ImageBitmap|null = null;
@@ -9,8 +14,10 @@ class Panel implements ActionListener {
   imageTy: number = 0;
   imageScale: number = 1;
   imageRotation: number = 0; //degrees
+  leftButtonTool: Tool = Tool.PAN;
 
-  constructor(canvas:HTMLCanvasElement) {
+  constructor(canvas:HTMLCanvasElement, id:number) {
+    this.id = id;
     this.canvas = canvas;
     this.mouseHandler = new MouseHandler(canvas, this);
   }
@@ -27,12 +34,33 @@ class Panel implements ActionListener {
     this.imageTy += rotatedPoint[1];
   }
 
+  setLeftButtonTool(tool:Tool) {
+    this.leftButtonTool = tool;
+  }
+
   onDrag(drag:DragEvent) {
-    this.translate(drag.lastDragEventDeltaX, drag.lastDragEventDeltaY)
+    if (drag.type != 'DRAG')
+      return;
+
+    switch (this.leftButtonTool) {
+      case Tool.PAN:
+        this.translate(drag.lastDragEventDeltaX, drag.lastDragEventDeltaY);
+        break;
+      case Tool.ZOOM:
+        this.zoom(drag.lastDragEventDeltaY < 0 ? +3 : -3, drag.initialDragEventX, drag.initialDragEventY);
+        break;
+      case Tool.ROTATE:
+        let amount = Math.abs(drag.lastDragEventDeltaY)/2;
+        let rightSide = drag.x > this.canvas.width/2;
+        let delta = rightSide 
+          ? drag.lastDragEventDeltaY > 0 ? +amount : -amount
+          : drag.lastDragEventDeltaY > 0 ? -amount : +amount;
+        this.rotate(delta);
+      break;
+    }
   }
 
   onWheel(x:number, y:number, delta:number) {
-    console.log('wheel', delta)
     let imagePoint = this.toImagePoint({x, y})
     if(delta > 0) {
       this.zoomOnImage(-20, imagePoint.x, imagePoint.y);
@@ -67,7 +95,6 @@ class Panel implements ActionListener {
   }
 
   rotate(degree: number) {
-    console.log('should rotate')
     this.imageRotation += degree;
   }
 
@@ -107,7 +134,7 @@ class Panel implements ActionListener {
   /**
    * Return the 'image to canvas' transformation matrix
    */
-  getTransformationMatrix():Matrix {
+  private getTransformationMatrix():Matrix {
     return compose(
       rotate(this.imageRotation*Math.PI/180, this.canvas.width/2, this.canvas.height/2),
       translate(this.imageTx, this.imageTy),
@@ -118,7 +145,7 @@ class Panel implements ActionListener {
   /**
    * Given a point on screen canvas, return the point on the image
    */
-  toImagePoint(canvasPoint:Point): Point {
+  private toImagePoint(canvasPoint:Point): Point {
     let matrix = inverse(this.getTransformationMatrix())
     return applyToPoint(matrix, canvasPoint);
   }
@@ -126,7 +153,7 @@ class Panel implements ActionListener {
   /**
    * Given a point on the image, return the point on canvas
    */
-  toCanvasPoint(imagePoint:Point):Point{
+  private toCanvasPoint(imagePoint:Point):Point{
       let matrix = this.getTransformationMatrix();
       return applyToPoint(matrix, imagePoint);
   }
@@ -155,4 +182,4 @@ class Panel implements ActionListener {
   }
 }
 
-export {Panel};
+export {Panel, Tool};

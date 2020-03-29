@@ -3,7 +3,8 @@ import React from "react";
 import * as panels from "./panels";
 
 interface CanvasPanelProps {
-  image: ImageBitmap;
+  id: number,
+  image: ImageBitmap
 }
 
 export function CanvasPanel(props: CanvasPanelProps) {
@@ -11,7 +12,7 @@ export function CanvasPanel(props: CanvasPanelProps) {
 
   React.useEffect(() => {
     if (props.image) {
-      const panel = panels.newPanel(canvasRef.current, props.image);
+      const panel = panels.newPanel(canvasRef.current, props.image, props.id);
 
       let keydown = function (e: KeyboardEvent) {
         if (e.code === "ArrowLeft")
