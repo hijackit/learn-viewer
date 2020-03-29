@@ -1,31 +1,24 @@
 import * as React from "react";
 import { ThumbnailsPanel } from "./ThumbnailsPanel";
 import { CanvasPanel } from "./CanvasPanel";
+import { OpenImageButton } from "./OpenImageButton";
 
 export interface HelloProps { compiler: string; framework: string; }
 
 export function App(props:HelloProps) {
   const [image, setImage] = React.useState<ImageBitmap>(null);
-
-  function openImage(url:string) {
-    console.log('click')
-    fetch(url)
-    .then(response => response.blob())
-    .then(blob => createImageBitmap(blob))
-    .then(bitmap => {
-      console.log('image loaded')
-      setImage(bitmap);
-    })
-  }
+  const fileInput = React.useRef<HTMLInputElement>();
 
   return (
     <div className="grid-wrapper">
         <div className="header">ROSSI MARIO</div>
-        <ThumbnailsPanel openImage={openImage}/>
+        <ThumbnailsPanel setImage={setImage}/>
         <div className="main-area">
           <CanvasPanel image={image}/>
         </div>
-        <div id="right-column"></div>
+        <div id="right-column">
+          <OpenImageButton setImage={setImage} />
+        </div>
         <div className="footer">footer</div>
     </div>
   )

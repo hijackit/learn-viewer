@@ -55,11 +55,22 @@ body {
     height: 100%;
 }
 
-.thumbnail:hover {
-    background-color: #222;
-}
 .thumbnail {
     border-bottom: 1px solid #933;
     padding: 1em;
     cursor: pointer;
+}
+
+.thumbnail:hover {
+    background-color: #222;
+}
+
+.toolbar-button {
+    border-bottom: 1px solid #933;
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+.toolbar-button:hover {
+    background-color: #222;
 }
