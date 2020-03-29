@@ -1,6 +1,9 @@
 # learn-viewer 
 A simple image viewer to explore the basics of a viewer application (render-loop, zoom, pan, rotation)
 
+## Tools
+The application is written in Typescript and React
+
 ## Contribute
 *  Clone the repository
 *  Run 'npm install'
