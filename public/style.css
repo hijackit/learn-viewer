@@ -36,7 +36,7 @@ body {
     grid-row-end: 3;
 }
 
-.right-column {
+#right-column {
     border-left: 1px solid #933;
     grid-row: 2/3;
     grid-column: 3/4;

@@ -3,7 +3,7 @@ var path = require('path');
 module.exports = {
     mode: "development",
     // Change to your "entry-point".
-    entry: './src/main.ts',
+    entry: './src/index.tsx',
     output: {
         path: path.resolve(__dirname, 'public/js'),
         publicPath: 'js',

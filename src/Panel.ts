@@ -131,7 +131,8 @@ class Panel implements ActionListener {
       return applyToPoint(matrix, imagePoint);
   }
 
-  render(ctx:CanvasRenderingContext2D) {
+  render() {
+    let ctx = this.canvas.getContext('2d');
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     if (this.image == null) {
       return;
