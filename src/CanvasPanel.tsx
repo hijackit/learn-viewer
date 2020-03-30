@@ -28,6 +28,6 @@ export function CanvasPanel(props: CanvasPanelProps) {
   }, []);
 
   return (
-    <canvas style={{ width: '100%', height: '100%' }} ref={canvasRef}></canvas>
-  );
+    <canvas style={{ width: '100%', height: '100%' }} ref={canvasRef} onContextMenu={e => e.preventDefault()}></canvas>
+  ); 
 }

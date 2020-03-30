@@ -1,5 +1,5 @@
 import { scale, applyToPoint, Point, inverse, compose, translate, rotate, Matrix, rotateDEG } from "transformation-matrix";
-import { MouseHandler, ActionListener, DragEvent } from "./MouseHandler";
+import { MouseHandler, ActionListener, DragEvent, MouseButton } from "./MouseHandler";
 
 enum Tool {
   PAN, ZOOM, ROTATE
@@ -14,7 +14,9 @@ class Panel implements ActionListener {
   imageTy: number = 0;
   imageScale: number = 1;
   imageRotation: number = 0; //degrees
-  leftButtonTool: Tool = Tool.PAN;
+  leftButtonTool: Tool = Tool.ZOOM;
+  middleButtonTool: Tool = Tool.PAN;
+  rightButtonTool: Tool = Tool.ROTATE;
 
   constructor(canvas:HTMLCanvasElement, id:number) {
     this.id = id;
@@ -38,11 +40,27 @@ class Panel implements ActionListener {
     this.leftButtonTool = tool;
   }
 
+  setMiddleButtonTool(tool:Tool) {
+    this.middleButtonTool = tool;
+  }
+  
+  setRightButtonTool(tool:Tool) {
+    this.middleButtonTool = tool;
+  }
+
   onDrag(drag:DragEvent) {
     if (drag.type != 'DRAG')
       return;
 
-    switch (this.leftButtonTool) {
+    let tool = drag.mouseButton == MouseButton.LEFT 
+      ? this.leftButtonTool
+      : drag.mouseButton == MouseButton.RIGHT
+        ? this.rightButtonTool
+        : this.middleButtonTool; 
+
+    console.log(tool)
+
+    switch (tool) {
       case Tool.PAN:
         this.translate(drag.lastDragEventDeltaX, drag.lastDragEventDeltaY);
         break;
@@ -72,6 +90,28 @@ class Panel implements ActionListener {
   zoomOnImage(amount:number, imageX:number, imageY:number) {
     let canvasPoint = this.toCanvasPoint({x: imageX, y: imageY});
     this.zoom(amount, canvasPoint.x, canvasPoint.y);
+  }
+
+  /**
+   * Set the desired zoom value. The zoom will be applied to the center of the canvas.
+   * 
+   * @param newScale 
+   */
+  setZoom(newScale:number) {
+    let canvasZoomPoint = {x: this.canvas.width/2, y: this.canvas.height/2}
+
+    let imageZoomPoint = this.toImagePoint(canvasZoomPoint);
+    console.log('zooming on', imageZoomPoint)
+    
+    // first change the scale, then we can compute the point on canvas after zoom
+    this.imageScale = newScale;
+    let canvasPointAfterZoom = this.toCanvasPoint(imageZoomPoint);
+
+    // translate back the image
+    let deltaX = canvasPointAfterZoom.x - canvasZoomPoint.x;
+    let deltaY = canvasPointAfterZoom.y - canvasZoomPoint.y;
+
+    this.translate(-deltaX, -deltaY)
   }
 
   zoom(amount:number, canvasX:number, canvasY:number) {

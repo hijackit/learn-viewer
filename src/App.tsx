@@ -36,7 +36,7 @@ export function App(props:HelloProps) {
               setMouseTool('ROTATE');
               getPanel(0).setLeftButtonTool(Tool.ROTATE);
             }}>Rotate</div>
-          <div className={'toolbar-button'} onClick={() => {}}>1:1</div>
+          <div className={'toolbar-button'} onClick={() => {getPanel(0)?.setZoom(1)}}>1:1</div>
         </div>
         <div className="footer">footer</div>
     </div>
