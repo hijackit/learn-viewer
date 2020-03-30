@@ -17,6 +17,8 @@ class Panel implements ActionListener {
   leftButtonTool: Tool = Tool.ZOOM;
   middleButtonTool: Tool = Tool.PAN;
   rightButtonTool: Tool = Tool.ROTATE;
+  horizontalFlip: boolean = false;
+  verticalFlip: boolean = false;
 
   constructor(canvas:HTMLCanvasElement, id:number) {
     this.id = id;
@@ -34,6 +36,14 @@ class Panel implements ActionListener {
     let rotatedPoint = applyToPoint(rotationMatrix, [deltaX, deltaY])
     this.imageTx += rotatedPoint[0];
     this.imageTy += rotatedPoint[1];
+  }
+
+  toggleHorizontalFlip() {
+    this.horizontalFlip = !this.horizontalFlip;
+  }
+
+  toggleVerticalFlip() {
+    this.verticalFlip = !this.verticalFlip;
   }
 
   setLeftButtonTool(tool:Tool) {
@@ -97,8 +107,8 @@ class Panel implements ActionListener {
    * 
    * @param newScale 
    */
-  setZoom(newScale:number) {
-    let canvasZoomPoint = {x: this.canvas.width/2, y: this.canvas.height/2}
+  setZoom(newScale:number, canvasX:number=this.canvas.width/2, canvasY:number=this.canvas.height/2) {
+    let canvasZoomPoint = {x: canvasX, y: canvasY}
 
     let imageZoomPoint = this.toImagePoint(canvasZoomPoint);
     console.log('zooming on', imageZoomPoint)
@@ -115,23 +125,9 @@ class Panel implements ActionListener {
   }
 
   zoom(amount:number, canvasX:number, canvasY:number) {
-    let canvasZoomPoint = {x: canvasX, y: canvasY}
-
     let deltaScale = this.imageScale/100 * amount;
     let newScale = this.imageScale + deltaScale;
-
-    let imageZoomPoint = this.toImagePoint(canvasZoomPoint);
-    console.log('zooming on', imageZoomPoint)
-    
-    // first change the scale, then we can compute the point on canvas after zoom
-    this.imageScale = newScale;
-    let canvasPointAfterZoom = this.toCanvasPoint(imageZoomPoint);
-
-    // translate back the image
-    let deltaX = canvasPointAfterZoom.x - canvasZoomPoint.x;
-    let deltaY = canvasPointAfterZoom.y - canvasZoomPoint.y;
-
-    this.translate(-deltaX, -deltaY)
+    this.setZoom(newScale, canvasX, canvasY);
   }
 
   rotate(degree: number) {
@@ -216,6 +212,17 @@ class Panel implements ActionListener {
 
     // scale
     ctx.scale(this.imageScale, this.imageScale);
+    
+
+    if (this.horizontalFlip) {
+      ctx.translate(this.image.width, 0);
+      ctx.scale(-1, 1);
+    }
+
+    if (this.verticalFlip) {
+      ctx.translate(0, this.image.height);
+      ctx.scale(1, -1);
+    }
 
     ctx.drawImage(this.image,0, 0); 
     ctx.restore()

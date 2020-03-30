@@ -76,6 +76,7 @@ body {
 }
 
 .toolbar-button.selected {  
-    background-color: #933;
+    /* background-color: #933; */
+    background-color: #4c1e1e;
     color: #FFF;
 }
