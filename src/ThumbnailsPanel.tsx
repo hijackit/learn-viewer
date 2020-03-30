@@ -1,19 +1,16 @@
 import { Thumbnail } from "./Thumbnail";
 import React from "react";
+import { getPanel } from "./panels";
 
-interface ThumbnailsPanelProps {
-  setImage: (bitmap: ImageBitmap) => void;
-}
-
-export function ThumbnailsPanel(props: ThumbnailsPanelProps) {
+export function ThumbnailsPanel() {
   
   function openImage(url:string) {
     fetch(url)
     .then(response => response.blob())
     .then(blob => createImageBitmap(blob))
     .then(bitmap => {
-      console.log('image loaded')
-      props.setImage(bitmap);
+      getPanel(0).setImage(bitmap);
+      getPanel(0).fit();
     })
   }
 

@@ -14,12 +14,12 @@ export function App(props:HelloProps) {
   return (
     <div className="grid-wrapper">
         <div className="header">ROSSI MARIO</div>
-        <ThumbnailsPanel setImage={setImage}/>
+        <ThumbnailsPanel />
         <div className="main-area">
-          <CanvasPanel id={0} image={image}/>
+          <CanvasPanel id={0}/>
         </div>
         <div id="right-column">
-          <OpenImageButton setImage={setImage} />
+          <OpenImageButton />
           <div className="toolbar-button" onClick={() => {getPanel(0)?.fit()}}>Fit</div>
           <div className={'toolbar-button ' + (mouseTool=='PAN' ? 'selected' : '')} 
             onClick={() => {

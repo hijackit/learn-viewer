@@ -2,18 +2,14 @@ import { Panel } from "./Panel";
 
 const panels:Map<number,Panel> = new Map();
 
-function newPanel(canvas:HTMLCanvasElement, image:ImageBitmap, id: number):Panel {
-  console.log('Initializing a new panel with image', image);
+function newPanel(canvas:HTMLCanvasElement, id: number):Panel {
+  console.log('Initializing a new panel', id);
 
   // set canvas dimension equals to the element
   canvas.width = canvas.scrollWidth;
   canvas.height = canvas.scrollHeight;
 
   const panel = new Panel(canvas, id);
-  panel.setImage(image);
-  panel.fit();
-  panel.render();
-
   panels.set(id, panel);
   return panel;
 }

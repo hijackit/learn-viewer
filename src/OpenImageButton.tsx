@@ -1,9 +1,7 @@
 import React from "react";
+import { getPanel } from "./panels";
 
-interface OpenImageButtonProps {
-  setImage: (bitmap: ImageBitmap) => void;
-}
-export function OpenImageButton(props: OpenImageButtonProps) {
+export function OpenImageButton() {
   const fileInput = React.useRef<HTMLInputElement>();
   return (<div>
     <div className="toolbar-button" onClick={() => {
@@ -17,7 +15,10 @@ export function OpenImageButton(props: OpenImageButtonProps) {
         var dataURL = reader.result.toString();
         const image = new Image();
         image.onload = function () {
-          createImageBitmap(image).then(bitmap => props.setImage(bitmap));
+          createImageBitmap(image).then(bitmap => {
+            getPanel(0).setImage(bitmap);
+            getPanel(0).fit();
+          });
         };
         image.onerror = function (error) {
           console.error('error loading selected image')
