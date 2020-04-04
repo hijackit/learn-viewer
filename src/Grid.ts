@@ -76,13 +76,6 @@ class Grid implements ActionListener {
         panel.zoom(+30, canvasX, canvasY);
       }
     });
-    // let canvasX = event.x - targetPanel.canvas.getBoundingClientRect().left;
-    // let canvasY = event.y - targetPanel.canvas.getBoundingClientRect().top;
-    // if(event.delta > 0) {
-    //   targetPanel.zoom(-30, canvasX, canvasY);
-    // } else {
-    //   targetPanel.zoom(+30, canvasX, canvasY);
-    // }
   }
 
   initPanel(id: number) {
