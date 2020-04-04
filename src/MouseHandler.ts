@@ -1,13 +1,15 @@
 class MouseHandler {
   canvas:HTMLCanvasElement;
+  listener:ActionListener;
   mousedown: boolean = false;
   button: number;
   dragging: boolean = false;
   initialDrag:DragEvent|null = null;
   lastDrag:DragEvent|null = null;
 
-  constructor(canvas:HTMLCanvasElement, listener?:ActionListener) {
+  constructor(canvas:HTMLCanvasElement, listener:ActionListener) {
     this.canvas = canvas;
+    this.listener = listener;
 
     canvas.onmousedown = (evt) => {
       evt.preventDefault();
@@ -15,41 +17,79 @@ class MouseHandler {
       this.button = evt.button;
     }
 
-    canvas.onmousemove = (evt) => {
-      evt.preventDefault();
-      if(this.mousedown) {
-          if(this.dragging){
-              let dragEvent = new DragEvent("DRAG", evt.offsetX, evt.offsetY, this.button, this.initialDrag, this.lastDrag);
-              this.lastDrag = dragEvent;
-              listener?.onDrag(dragEvent);
-          } else {
-              let dragEvent = new DragEvent("START", evt.offsetX, evt.offsetY, this.button, null, null);
-              this.initialDrag = dragEvent;
-              this.lastDrag = dragEvent;
-              listener?.onDrag(dragEvent);
-          }
-          this.dragging = true;
-      }
-    }
+    // canvas.onmousemove = (evt) => {
+    //   evt.preventDefault();
+    //   if(this.mousedown) {
+    //       if(this.dragging){
+    //           let dragEvent = new DragEvent("DRAG", evt.offsetX, evt.offsetY, this.button, this.initialDrag, this.lastDrag);
+    //           this.lastDrag = dragEvent;
+    //           listener?.onDrag(dragEvent);
+    //       } else {
+    //           let dragEvent = new DragEvent("START", evt.offsetX, evt.offsetY, this.button, null, null);
+    //           this.initialDrag = dragEvent;
+    //           this.lastDrag = dragEvent;
+    //           listener?.onDrag(dragEvent);
+    //       }
+    //       this.dragging = true;
+    //   }
+    // }
 
-    canvas.onmouseup = (evt) => {
-      evt.preventDefault();
-      this.mousedown = false;
-      if(this.dragging) {
-        listener?.onDrag(new DragEvent("STOP", evt.offsetX, evt.offsetY, this.button, this.initialDrag, this.lastDrag))
-        this.initialDrag = null;
-        this.lastDrag = null;
-      } else {
-        listener?.onClick(evt.offsetX, evt.offsetY)
-      }
+    // canvas.onmouseup = (evt) => {
+    //   evt.preventDefault();
+    //   this.mousedown = false;
+    //   if(this.dragging) {
+    //     listener?.onDrag(new DragEvent("STOP", evt.offsetX, evt.offsetY, this.button, this.initialDrag, this.lastDrag))
+    //     this.initialDrag = null;
+    //     this.lastDrag = null;
+    //   } else {
+    //     listener?.onClick(evt.offsetX, evt.offsetY)
+    //   }
   
-      this.dragging = false;
-    }
+    //   this.dragging = false;
+    // }
 
     canvas.onwheel = (evt) => {
       evt.preventDefault();
       listener?.onWheel(evt.offsetX, evt.offsetY, evt.deltaY);
     }
+  }
+
+  getOffset(event:MouseEvent):[number, number] {
+    const rect = this.canvas.getBoundingClientRect();
+    const offsetX = event.clientX - rect.left;
+    const offsetY = event.clientY - rect.top;
+    return [offsetX, offsetY];
+  }
+
+  mouseMoved(evt:MouseEvent) {
+    if(this.mousedown) {
+      const [offsetX, offsetY] = this.getOffset(evt);
+      
+      if (this.dragging) {
+        let dragEvent = new DragEvent("DRAG", offsetX, offsetY, this.button, this.initialDrag, this.lastDrag);
+        this.lastDrag = dragEvent;
+        this.listener?.onDrag(dragEvent);
+      } else {
+        let dragEvent = new DragEvent("START", offsetX, offsetY, this.button, null, null);
+        this.initialDrag = dragEvent;
+        this.lastDrag = dragEvent;
+        this.listener?.onDrag(dragEvent);
+      }
+      this.dragging = true;
+    }
+  }
+
+  mouseUp(evt:MouseEvent) {
+    this.mousedown = false;
+    if(this.dragging) {
+      this.listener?.onDrag(new DragEvent("STOP", evt.offsetX, evt.offsetY, this.button, this.initialDrag, this.lastDrag))
+      this.initialDrag = null;
+      this.lastDrag = null;
+    } else {
+      this.listener?.onClick(evt.offsetX, evt.offsetY)
+    }
+
+    this.dragging = false;
   }
 }
 

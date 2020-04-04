@@ -26,6 +26,14 @@ class Panel implements ActionListener {
     this.mouseHandler = new MouseHandler(canvas, this);
   }
 
+  onMouseMove(e:MouseEvent) {
+    this.mouseHandler.mouseMoved(e);
+  }
+
+  onMouseUp(e:MouseEvent) {
+    this.mouseHandler.mouseUp(e);
+  }
+
   onClick(x:number, y:number) {
     let imagePoint = this.toImagePoint({x, y});
     console.log('clicked on', x, y, imagePoint)
@@ -68,14 +76,12 @@ class Panel implements ActionListener {
         ? this.rightButtonTool
         : this.middleButtonTool; 
 
-    console.log(tool)
-
     switch (tool) {
       case Tool.PAN:
         this.translate(drag.lastDragEventDeltaX, drag.lastDragEventDeltaY);
         break;
       case Tool.ZOOM:
-        this.zoom(drag.lastDragEventDeltaY < 0 ? +3 : -3, drag.initialDragEventX, drag.initialDragEventY);
+        this.zoom(drag.lastDragEventDeltaY < 0 ? +5 : -5, drag.initialDragEventX, drag.initialDragEventY);
         break;
       case Tool.ROTATE:
         let amount = Math.abs(drag.lastDragEventDeltaY)/2;
@@ -91,9 +97,9 @@ class Panel implements ActionListener {
   onWheel(x:number, y:number, delta:number) {
     let imagePoint = this.toImagePoint({x, y})
     if(delta > 0) {
-      this.zoomOnImage(-20, imagePoint.x, imagePoint.y);
+      this.zoomOnImage(-30, imagePoint.x, imagePoint.y);
     } else {
-      this.zoomOnImage(+20, imagePoint.x, imagePoint.y);
+      this.zoomOnImage(+30, imagePoint.x, imagePoint.y);
     }
   }
 
@@ -111,7 +117,6 @@ class Panel implements ActionListener {
     let canvasZoomPoint = {x: canvasX, y: canvasY}
 
     let imageZoomPoint = this.toImagePoint(canvasZoomPoint);
-    console.log('zooming on', imageZoomPoint)
     
     // first change the scale, then we can compute the point on canvas after zoom
     this.imageScale = newScale;
@@ -194,12 +199,29 @@ class Panel implements ActionListener {
       return applyToPoint(matrix, imagePoint);
   }
 
+  lastRenderedTx = 0;
+  lastRenderedTy = 0;
+  lastRenderedRotation = 0;
+
   render() {
+    // if(this.imageTx == this.lastRenderedTx && this.imageTy == this.lastRenderedTy && this.lastRenderedRotation == this.imageRotation)
+    //   return;
+
     let ctx = this.canvas.getContext('2d');
+
+    // when the canvas has been resized, adjust the canvas dimensions accordingly
+    if (this.canvas.scrollWidth != this.canvas.width || this.canvas.scrollHeight != this.canvas.height) {
+      this.canvas.width = this.canvas.scrollWidth;
+      this.canvas.height = this.canvas.scrollHeight;
+      this.fit();
+    }
+
+    // clear the canvas
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     if (this.image == null) {
       return;
     }
+
     ctx.save()
 
     // rotation
@@ -212,7 +234,6 @@ class Panel implements ActionListener {
 
     // scale
     ctx.scale(this.imageScale, this.imageScale);
-    
 
     if (this.horizontalFlip) {
       ctx.translate(this.image.width, 0);
@@ -226,6 +247,37 @@ class Panel implements ActionListener {
 
     ctx.drawImage(this.image,0, 0); 
     ctx.restore()
+
+    ctx.save();
+
+    // draw borders on the angles of the panel when selected
+    const lineWidth = Math.min(this.canvas.width, this.canvas.height) / 15;
+    ctx.strokeStyle = "#FFF";
+    ctx.moveTo(0, 0);
+    ctx.lineTo(lineWidth, 0);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, lineWidth);
+
+    ctx.moveTo(this.canvas.width, 0);
+    ctx.lineTo(this.canvas.width - lineWidth, 0);
+    ctx.moveTo(this.canvas.width, 0);
+    ctx.lineTo(this.canvas.width, lineWidth);
+
+    ctx.moveTo(this.canvas.width, this.canvas.height);
+    ctx.lineTo(this.canvas.width, this.canvas.height - lineWidth);
+    ctx.moveTo(this.canvas.width, this.canvas.height);
+    ctx.lineTo(this.canvas.width - lineWidth, this.canvas.height);
+
+    ctx.moveTo(0, this.canvas.height);
+    ctx.lineTo(lineWidth, this.canvas.height);
+    ctx.moveTo(0, this.canvas.height);
+    ctx.lineTo(0, this.canvas.height - lineWidth);
+
+    ctx.stroke();
+    ctx.restore();
+
+    this.lastRenderedTx = this.imageTx;
+    this.lastRenderedTy = this.imageTy;
   }
 }
 
