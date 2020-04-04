@@ -12,14 +12,12 @@ export function ThumbnailsPanel() {
     .then(response => response.blob())
     .then(blob => createImageBitmap(blob))
     .then(bitmap => {
-      // panels.getPanel(panelIndex).setImage(bitmap);
-      // panels.getPanel(panelIndex).fit();
-      // panelIndex++;
-      // if(panelIndex >= panels.getPanels().size)
-      //   panelIndex = 0;
       console.log('opening')
-      grid.get().getPanel(0).setImage(bitmap);
-      grid.get().getPanel(0).fit();
+      grid.get().getPanel(panelIndex).setImage(bitmap);
+      grid.get().getPanel(panelIndex).fit();
+      panelIndex++;
+      if(panelIndex >= grid.get().getPanels().size)
+        panelIndex = 0;
     })
   }
 
@@ -30,5 +28,6 @@ export function ThumbnailsPanel() {
     <Thumbnail onClick={() => openImage('images/dino.jpg')} title='Dino' />
     <Thumbnail onClick={() => openImage('images/rock.jpg')} title='Rockefeller' />
     <Thumbnail onClick={() => openImage('images/sf.jpg')} title='San Francisco' />
+    <Thumbnail onClick={() => openImage('images/mano_dx.jpg')} title='Right hand' />
   </div>);
 }

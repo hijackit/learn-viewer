@@ -1,5 +1,5 @@
 import React from "react";
-import { getPanel } from "./panels";
+import * as grid from "./Grid";
 
 export function OpenImageButton() {
   const fileInput = React.useRef<HTMLInputElement>();
@@ -16,8 +16,8 @@ export function OpenImageButton() {
         const image = new Image();
         image.onload = function () {
           createImageBitmap(image).then(bitmap => {
-            getPanel(0).setImage(bitmap);
-            getPanel(0).fit();
+            grid.get().getPanel(0).setImage(bitmap);
+            grid.get().getPanel(0).fit();
           });
         };
         image.onerror = function (error) {

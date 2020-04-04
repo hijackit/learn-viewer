@@ -1,43 +1,52 @@
-import { getPanel } from "./panels";
 import React from "react";
 import { OpenImageButton } from "./OpenImageButton";
-import { Tool } from "./Panel";
+import { Tool } from "./Tool";
+import * as grid from "./Grid";
 
 function ButtonsToolbar() {
   const [mouseTool, setMouseTool] = React.useState('ZOOM');
   const [verticalFlip, setVerticalFlip] = React.useState(false);
   const [horizontalFlip, setHorizontalFlip] = React.useState(false);
+  const [link, setLink] = React.useState(false);
 
   return (
     <div>
       <OpenImageButton />
-      <div className="toolbar-button" onClick={() => { getPanel(0)?.fit() }}>Fit</div>
+      <div className={'toolbar-button ' + (link ? 'selected' : '')}
+        onClick={() => { 
+          setLink(!link);
+          grid.get().toggleLink();
+        }}>Link</div> 
+        <div className="toolbar-button" 
+        onClick={() => { 
+          grid.get().getSelectedPanel().fit();
+        }}>Fit</div>
       <div className={'toolbar-button ' + (mouseTool == 'PAN' ? 'selected' : '')}
         onClick={() => {
           setMouseTool('PAN');
-          getPanel(0).setLeftButtonTool(Tool.PAN);
+          grid.get().setLeftButton('PAN');
         }}>Pan</div>
       <div className={'toolbar-button ' + (mouseTool == 'ZOOM' ? 'selected' : '')}
         onClick={() => {
           setMouseTool('ZOOM');
-          getPanel(0).setLeftButtonTool(Tool.ZOOM);
+          grid.get().setLeftButton('ZOOM');
         }}>Zoom</div>
       <div className={'toolbar-button ' + (mouseTool == 'ROTATE' ? 'selected' : '')}
         onClick={() => {
           setMouseTool('ROTATE');
-          getPanel(0).setLeftButtonTool(Tool.ROTATE);
+          grid.get().setLeftButton('ROTATE');
         }}>Rotate</div>
       <div className={'toolbar-button'}
-        onClick={() => { getPanel(0)?.setZoom(1) }}>1:1</div>
+        onClick={() => { grid.get().getSelectedPanel().setZoom(1) }}>1:1</div>
       <div className={'toolbar-button ' + (horizontalFlip ? 'selected' : '')}
         onClick={() => {
           setHorizontalFlip(!horizontalFlip);
-          getPanel(0)?.toggleHorizontalFlip();
+          grid.get().getSelectedPanel().toggleHorizontalFlip();
         }}>H-Flip</div>
       <div className={'toolbar-button ' + (verticalFlip ? 'selected' : '')}
         onClick={() => {
           setVerticalFlip(!verticalFlip);
-          getPanel(0)?.toggleVerticalFlip();
+          grid.get().getSelectedPanel().toggleVerticalFlip();
         }}>V-Flip</div>
     </div>
   )

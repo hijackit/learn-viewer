@@ -1,49 +1,46 @@
-import { scale, applyToPoint, Point, inverse, compose, translate, rotate, Matrix, rotateDEG } from "transformation-matrix";
-import { MouseHandler, ActionListener, DragEvent, MouseButton } from "./MouseHandler";
+import { scale, applyToPoint, inverse, compose, translate, rotate, Matrix, rotateDEG } from "transformation-matrix";
+import { MouseHandler, ActionListener, DragEvent, MouseButton, ClickEvent, WheelEvent} from "./MouseHandler";
+import { Tool } from "./Tool";
 
-enum Tool {
-  PAN, ZOOM, ROTATE
+interface Point {
+  x: number,
+  y: number
 }
 
-class Panel implements ActionListener {
+class Panel {
   id:number;
   canvas:HTMLCanvasElement;
-  mouseHandler:MouseHandler;
   image:ImageBitmap|null = null;
   imageTx: number = 0;
   imageTy: number = 0;
   imageScale: number = 1;
   imageRotation: number = 0; //degrees
-  leftButtonTool: Tool = Tool.ZOOM;
-  middleButtonTool: Tool = Tool.PAN;
-  rightButtonTool: Tool = Tool.ROTATE;
   horizontalFlip: boolean = false;
   verticalFlip: boolean = false;
 
   constructor(canvas:HTMLCanvasElement, id:number) {
     this.id = id;
     this.canvas = canvas;
-    this.mouseHandler = new MouseHandler(canvas, this);
   }
 
-  onMouseMove(e:MouseEvent) {
-    this.mouseHandler.mouseMoved(e);
+  private viewportToCanvasPoint(event:Point):Point {
+    const rect = this.canvas.getBoundingClientRect();
+    const canvasX = event.x - rect.left;
+    const canvasY = event.y - rect.top;
+    return {x: canvasX, y: canvasY};
   }
 
-  onMouseUp(e:MouseEvent) {
-    this.mouseHandler.mouseUp(e);
-  }
-
-  onClick(x:number, y:number) {
-    let imagePoint = this.toImagePoint({x, y});
-    console.log('clicked on', x, y, imagePoint)
+  onClick(event:ClickEvent) {
+    const canvasPoint = this.viewportToCanvasPoint(event);
+    let imagePoint = this.toImagePoint(canvasPoint);
+    console.log('clicked on', canvasPoint.x, canvasPoint.y, imagePoint)
   }
 
   translate(deltaX:number, deltaY:number) {
     let rotationMatrix = inverse(rotateDEG(this.imageRotation))
-    let rotatedPoint = applyToPoint(rotationMatrix, [deltaX, deltaY])
-    this.imageTx += rotatedPoint[0];
-    this.imageTy += rotatedPoint[1];
+    let rotatedPoint = <Point>applyToPoint(rotationMatrix, {x: deltaX, y: deltaY})
+    this.imageTx += rotatedPoint.x;
+    this.imageTy += rotatedPoint.y;
   }
 
   toggleHorizontalFlip() {
@@ -54,55 +51,6 @@ class Panel implements ActionListener {
     this.verticalFlip = !this.verticalFlip;
   }
 
-  setLeftButtonTool(tool:Tool) {
-    this.leftButtonTool = tool;
-  }
-
-  setMiddleButtonTool(tool:Tool) {
-    this.middleButtonTool = tool;
-  }
-  
-  setRightButtonTool(tool:Tool) {
-    this.middleButtonTool = tool;
-  }
-
-  onDrag(drag:DragEvent) {
-    if (drag.type != 'DRAG')
-      return;
-
-    let tool = drag.mouseButton == MouseButton.LEFT 
-      ? this.leftButtonTool
-      : drag.mouseButton == MouseButton.RIGHT
-        ? this.rightButtonTool
-        : this.middleButtonTool; 
-
-    switch (tool) {
-      case Tool.PAN:
-        this.translate(drag.lastDragEventDeltaX, drag.lastDragEventDeltaY);
-        break;
-      case Tool.ZOOM:
-        this.zoom(drag.lastDragEventDeltaY < 0 ? +5 : -5, drag.initialDragEventX, drag.initialDragEventY);
-        break;
-      case Tool.ROTATE:
-        let amount = Math.abs(drag.lastDragEventDeltaY)/2;
-        let rightSide = drag.x > this.canvas.width/2;
-        let delta = rightSide 
-          ? drag.lastDragEventDeltaY > 0 ? +amount : -amount
-          : drag.lastDragEventDeltaY > 0 ? -amount : +amount;
-        this.rotate(delta);
-      break;
-    }
-  }
-
-  onWheel(x:number, y:number, delta:number) {
-    let imagePoint = this.toImagePoint({x, y})
-    if(delta > 0) {
-      this.zoomOnImage(-30, imagePoint.x, imagePoint.y);
-    } else {
-      this.zoomOnImage(+30, imagePoint.x, imagePoint.y);
-    }
-  }
-
   zoomOnImage(amount:number, imageX:number, imageY:number) {
     let canvasPoint = this.toCanvasPoint({x: imageX, y: imageY});
     this.zoom(amount, canvasPoint.x, canvasPoint.y);
@@ -110,8 +58,6 @@ class Panel implements ActionListener {
 
   /**
    * Set the desired zoom value. The zoom will be applied to the center of the canvas.
-   * 
-   * @param newScale 
    */
   setZoom(newScale:number, canvasX:number=this.canvas.width/2, canvasY:number=this.canvas.height/2) {
     let canvasZoomPoint = {x: canvasX, y: canvasY}
@@ -157,13 +103,13 @@ class Panel implements ActionListener {
     // center the image horizontally and vertically
     let imageCenterX = this.image.width/2;
     let imageCenterY = this.image.height/2;
-    let imageCenterOnCanvas:Point = applyToPoint(scaleMatrix, [imageCenterX, imageCenterY]);
+    let imageCenterOnCanvas = <Point>applyToPoint(scaleMatrix, {x: imageCenterX, y: imageCenterY});
 
     // move the center of the image onto the center of the canvas
     let canvasCenterX = this.canvas.width/2;
     let canvasCenterY = this.canvas.height/2;
-    let tx = canvasCenterX - imageCenterOnCanvas[0];
-    let ty = canvasCenterY - imageCenterOnCanvas[1];
+    let tx = canvasCenterX - imageCenterOnCanvas.x;
+    let ty = canvasCenterY - imageCenterOnCanvas.y;
 
     // apply
     this.imageTx = tx;
@@ -188,7 +134,7 @@ class Panel implements ActionListener {
    */
   private toImagePoint(canvasPoint:Point): Point {
     let matrix = inverse(this.getTransformationMatrix())
-    return applyToPoint(matrix, canvasPoint);
+    return <Point>applyToPoint(matrix, canvasPoint);
   }
 
   /**
@@ -196,7 +142,7 @@ class Panel implements ActionListener {
    */
   private toCanvasPoint(imagePoint:Point):Point{
       let matrix = this.getTransformationMatrix();
-      return applyToPoint(matrix, imagePoint);
+      return <Point>applyToPoint(matrix, imagePoint);
   }
 
   lastRenderedTx = 0;
