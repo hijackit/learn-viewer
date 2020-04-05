@@ -29,6 +29,25 @@ class MouseHandler {
     this.element = element;
     this.listener = listener;
 
+    element.onclick = (evt) => {
+      listener.onClick({
+        x: evt.clientX,
+        y: evt.clientY,
+        target: evt.target,
+        mouseButton: this.mouseButton,
+      })
+    }
+    
+    element.ondblclick = (evt) => {
+      console.log('dbl click')
+      listener.onDoubleClick({
+        x: evt.clientX,
+        y: evt.clientY,
+        target: evt.target,
+        mouseButton: this.mouseButton,
+      })
+    }
+
     element.onmousedown = (evt) => {
       evt.preventDefault();
       this.mousedown = true;
@@ -61,20 +80,10 @@ class MouseHandler {
 
     element.onmouseup = (evt) => {
       evt.preventDefault();
-      // this.mousedown = false;
-      const clientX = evt.clientX;
-      const clientY = evt.clientY;
 
       if (this.dragging) {
         this.initialDrag = null;
         this.lastDrag = null;
-      } else if (this.mousedown) {
-        listener.onClick({
-          x:clientX,
-          y:clientY,
-          target: evt.target,
-          mouseButton: this.mouseButton,
-        })
       }
       this.dragging = false;
       this.mousedown = false;
@@ -107,6 +116,7 @@ class MouseHandler {
 interface ActionListener {
   onDrag(event: DragEvent): void;
   onClick(event: ClickEvent): void;
+  onDoubleClick(event: ClickEvent): void
   onWheel(event: WheelEvent): void;
 }
 

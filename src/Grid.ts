@@ -14,6 +14,7 @@ class Grid implements ActionListener {
   middleButtonTool: Tool = Tool.PAN;
   rightButtonTool: Tool = Tool.ROTATE;
   selectedPanel:Panel|null;
+  maximized:boolean = false;
 
   constructor(grid:HTMLDivElement) {
     this.mouseHandler = new MouseHandler(grid, this);
@@ -73,6 +74,32 @@ class Grid implements ActionListener {
     const targetPanel = this.cpanels.get(<HTMLCanvasElement>event.target);
     this.setSelected(targetPanel);
     targetPanel.onClick(event.x, event.y);
+  }
+
+  // ActionListener callback
+  public onDoubleClick(event: ClickEvent): void {
+    const targetPanel = this.cpanels.get(<HTMLCanvasElement>event.target);
+    this.setSelected(targetPanel);
+    this.toggleMaximization(targetPanel);
+  }
+
+  private toggleMaximization(targetPanel:Panel) {
+    this.setSelected(targetPanel);
+    
+    if (this.maximized) {
+      this.setLayout(this.rows, this.columns);
+    } else {
+      document.documentElement.style.setProperty("--gridRows", "1");
+      document.documentElement.style.setProperty("--gridCols", "1");
+
+      // hide all panels but the target one
+      for (let idx = 0; idx < this.grid.children.length; idx++) {
+        let canvasWrapper = <HTMLScriptElement>this.grid.children[idx];
+        canvasWrapper.style.display = idx == targetPanel.id ? '' : 'none';
+      }
+    }
+
+    this.maximized = !this.maximized;
   }
 
   // ActionListener callback
@@ -173,7 +200,7 @@ class Grid implements ActionListener {
   public openImage(image:ImageBitmap) {
     let panels = Array.from(this.panels.values());
     let firstEmptyPanel = panels.find(panel => panel.image == null);
-    if(firstEmptyPanel) {
+    if (firstEmptyPanel && !this.maximized) {
       firstEmptyPanel.setImage(image);
       firstEmptyPanel.fit();
       this.setSelected(firstEmptyPanel);
