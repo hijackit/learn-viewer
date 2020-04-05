@@ -19,7 +19,7 @@ const FooterButton = styled.div`
 export function App() {
   return (
     <div className="grid-wrapper">
-        <div className="header">ROSSI MARIO</div>
+        <div className="header">IMAGE VIEWER</div>
         <div className="left-column">
           <ThumbnailsPanel />
         </div>
