@@ -1,5 +1,6 @@
 import { Panel, Tool } from "./Panel";
-import { MouseHandler, ActionListener, DragEvent, ClickEvent, WheelEvent, MouseButton } from "./MouseHandler";
+import { MouseHandler, ActionListener, DragEvent, ClickEvent, WheelEvent } from "./MouseHandler";
+import { MouseButton } from "./MouseButton";
 
 class Grid implements ActionListener {
   grid:HTMLDivElement;
@@ -20,7 +21,8 @@ class Grid implements ActionListener {
     this.setLayout(2, 2);
   }
 
-  onDrag(event: DragEvent): void {
+  // ActionListener callback
+  public onDrag(event: DragEvent): void {
     let targetPanel:Panel = this.cpanels.get(<HTMLCanvasElement>event.target);
     let targetPanels:Array<Panel> = this.linkPanels 
       ? this.getVisiblePanels()
@@ -57,12 +59,14 @@ class Grid implements ActionListener {
     }
   }
 
-  onClick(event: ClickEvent): void {
+  // ActionListener callback
+  public onClick(event: ClickEvent): void {
     const targetPanel = this.cpanels.get(<HTMLCanvasElement>event.target);
-    targetPanel.onClick(event);
+    targetPanel.onClick(event.x, event.y);
   }
 
-  onWheel(event: WheelEvent): void {
+  // ActionListener callback
+  public onWheel(event: WheelEvent): void {
     const targetPanel = this.cpanels.get(<HTMLCanvasElement>event.target);
     let targetPanels:Array<Panel> = this.linkPanels 
       ? this.getVisiblePanels()
@@ -78,7 +82,7 @@ class Grid implements ActionListener {
     });
   }
 
-  initPanel(id: number) {
+  private initPanel(id: number) {
     if (this.panels.has(id))
       return;
 
@@ -95,16 +99,9 @@ class Grid implements ActionListener {
     this.cpanels.set(canvas, panel);
   }
 
-  render() {
+  public render() {
     // render all visible panels only
-    this.visiblePanels(panel => panel.render())
-  }
-
-  // apply the given function to all visible panels
-  private visiblePanels(fn:(panel:Panel)=>void) {
-    for (let idx = 0; idx < this.rows * this.columns; idx++) {
-      fn(this.panels.get(idx));
-    }
+    this.getVisiblePanels().forEach(panel => panel.render());
   }
 
   private getVisiblePanels() {
@@ -112,11 +109,11 @@ class Grid implements ActionListener {
     return Array.from(this.panels.values()).filter((panel, index) => index < visiblePanels);
   }
   
-  setLeftButton(tool:Tool) {
+  public setLeftButton(tool:Tool) {
     this.leftButtonTool = tool;
   }
 
-  toggleLink() {
+  public toggleLink() {
     this.linkPanels = !this.linkPanels;
   }
 
@@ -133,7 +130,7 @@ class Grid implements ActionListener {
   }
 
   // change the css grid rows/columns and hide exceeding canvas
-  setLayout(rows:number, columns:number) {
+  public setLayout(rows:number, columns:number) {
     console.log(rows, columns)
     this.rows = rows;
     this.columns = columns;

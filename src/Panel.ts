@@ -1,5 +1,4 @@
 import { scale, applyToPoint, inverse, compose, translate, rotate, Matrix, rotateDEG } from "transformation-matrix";
-import { MouseHandler, ActionListener, DragEvent, MouseButton, ClickEvent, WheelEvent} from "./MouseHandler";
 import { Tool } from "./Tool";
 
 interface Point {
@@ -23,43 +22,31 @@ class Panel {
     this.canvas = canvas;
   }
 
-  private viewportToCanvasPoint(event:Point):Point {
-    const rect = this.canvas.getBoundingClientRect();
-    const canvasX = event.x - rect.left;
-    const canvasY = event.y - rect.top;
-    return {x: canvasX, y: canvasY};
-  }
-
-  onClick(event:ClickEvent) {
-    const canvasPoint = this.viewportToCanvasPoint(event);
+  public onClick(x:number, y:number) {
+    const canvasPoint = this.viewportToCanvasPoint({x, y});
     let imagePoint = this.toImagePoint(canvasPoint);
     console.log('clicked on', canvasPoint.x, canvasPoint.y, imagePoint)
   }
 
-  translate(deltaX:number, deltaY:number) {
+  public translate(deltaX:number, deltaY:number) {
     let rotationMatrix = inverse(rotateDEG(this.imageRotation))
     let rotatedPoint = <Point>applyToPoint(rotationMatrix, {x: deltaX, y: deltaY})
     this.imageTx += rotatedPoint.x;
     this.imageTy += rotatedPoint.y;
   }
 
-  toggleHorizontalFlip() {
+  public toggleHorizontalFlip() {
     this.horizontalFlip = !this.horizontalFlip;
   }
 
-  toggleVerticalFlip() {
+  public toggleVerticalFlip() {
     this.verticalFlip = !this.verticalFlip;
-  }
-
-  zoomOnImage(amount:number, imageX:number, imageY:number) {
-    let canvasPoint = this.toCanvasPoint({x: imageX, y: imageY});
-    this.zoom(amount, canvasPoint.x, canvasPoint.y);
   }
 
   /**
    * Set the desired zoom value. The zoom will be applied to the center of the canvas.
    */
-  setZoom(newScale:number, canvasX:number=this.canvas.width/2, canvasY:number=this.canvas.height/2) {
+  public setZoom(newScale:number, canvasX:number=this.canvas.width/2, canvasY:number=this.canvas.height/2) {
     let canvasZoomPoint = {x: canvasX, y: canvasY}
 
     let imageZoomPoint = this.toImagePoint(canvasZoomPoint);
@@ -75,21 +62,21 @@ class Panel {
     this.translate(-deltaX, -deltaY)
   }
 
-  zoom(amount:number, canvasX:number, canvasY:number) {
+  public zoom(amount:number, canvasX:number, canvasY:number) {
     let deltaScale = this.imageScale/100 * amount;
     let newScale = this.imageScale + deltaScale;
     this.setZoom(newScale, canvasX, canvasY);
   }
 
-  rotate(degree: number) {
+  public rotate(degree: number) {
     this.imageRotation += degree;
   }
 
-  setImage(image:ImageBitmap) {
+  public setImage(image:ImageBitmap) {
     this.image = image;
   }
 
-  fit() {
+  public fit() {
     if (this.image == null) {
       return;
     }
@@ -145,14 +132,17 @@ class Panel {
       return <Point>applyToPoint(matrix, imagePoint);
   }
 
-  lastRenderedTx = 0;
-  lastRenderedTy = 0;
-  lastRenderedRotation = 0;
+  /**
+   * Given a point on the viewport, return the point on canvas
+   */
+  private viewportToCanvasPoint(viewportPoint:Point):Point {
+    const rect = this.canvas.getBoundingClientRect();
+    const canvasX = viewportPoint.x - rect.left;
+    const canvasY = viewportPoint.y - rect.top;
+    return {x: canvasX, y: canvasY};
+  }
 
-  render() {
-    // if(this.imageTx == this.lastRenderedTx && this.imageTy == this.lastRenderedTy && this.lastRenderedRotation == this.imageRotation)
-    //   return;
-
+  public render() {
     let ctx = this.canvas.getContext('2d');
 
     // when the canvas has been resized, adjust the canvas dimensions accordingly
@@ -221,9 +211,6 @@ class Panel {
 
     ctx.stroke();
     ctx.restore();
-
-    this.lastRenderedTx = this.imageTx;
-    this.lastRenderedTy = this.imageTy;
   }
 }
 

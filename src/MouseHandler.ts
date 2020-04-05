@@ -1,3 +1,20 @@
+import { MouseButton } from "./MouseButton";
+
+/**
+ * This class can be attached to an HTML Element in order to watch for mouse events and obtain actions.
+ * 
+ * @remarks
+ * This class processes low-level mouse events such as 
+ * - onmousedown
+ * - onmousemove
+ * - onmouseup
+ * - onwheel
+ * 
+ * and emits higher-order actions to the ActionListener:
+ * - onDrag
+ * - onClick
+ * - onWheel
+ */
 class MouseHandler {
   element: HTMLElement;
   listener: ActionListener;
@@ -15,13 +32,12 @@ class MouseHandler {
     element.onmousedown = (evt) => {
       evt.preventDefault();
       this.mousedown = true;
-      this.mouseButton = getMouseButton(evt);
+      this.mouseButton = this.getMouseButton(evt);
       this.target = evt.target;
     }
 
     element.onmousemove = (evt) => {
       evt.preventDefault();
-      // const [offsetX, offsetY] = this.getOffset(evt);
       const clientX = evt.clientX;
       const clientY = evt.clientY;
       if (this.mousedown) {
@@ -48,7 +64,6 @@ class MouseHandler {
       this.mousedown = false;
       const clientX = evt.clientX;
       const clientY = evt.clientY;
-      // const [offsetX, offsetY] = this.getOffset(evt);
 
       if (this.dragging) {
         this.initialDrag = null;
@@ -66,7 +81,6 @@ class MouseHandler {
 
     element.onwheel = (evt) => {
       evt.preventDefault();
-      // const [offsetX, offsetY] = this.getOffset(evt);
       const clientX = evt.clientX;
       const clientY = evt.clientY;
       const wheelEvent: WheelEvent = {
@@ -79,12 +93,13 @@ class MouseHandler {
     }
   }
 
-  // get coordinates relative to the element
-  getOffset(evt:MouseEvent):[number, number] {
-    const rect = this.element.getBoundingClientRect();
-    const x = evt.clientX - rect.left;
-    const y = evt.clientY - rect.top;
-    return [x, y];
+  getMouseButton(evt:MouseEvent):MouseButton {
+    if (evt.button == 0)
+        return MouseButton.LEFT;
+      if (evt.button == 1)
+        return MouseButton.MIDDLE;
+      if (evt.button == 2)
+        return MouseButton.RIGHT;
   }
 }
 
@@ -92,10 +107,6 @@ interface ActionListener {
   onDrag(event: DragEvent): void;
   onClick(event: ClickEvent): void;
   onWheel(event: WheelEvent): void;
-}
-
-enum MouseButton {
-  LEFT = 'LEFT', MIDDLE = 'MIDDLE', RIGHT= 'RIGHT'
 }
 
 interface WheelEvent {
@@ -113,7 +124,6 @@ interface ClickEvent {
 }
 
 interface DragEventProps {
-  // type: "START" | "DRAG" | "STOP", 
   x: number, 
   y: number, 
   mouseButton: MouseButton, 
@@ -122,17 +132,7 @@ interface DragEventProps {
   target:EventTarget | null
 }
 
-function getMouseButton(evt:MouseEvent):MouseButton {
-  if (evt.button == 0)
-      return MouseButton.LEFT;
-    if (evt.button == 1)
-      return MouseButton.MIDDLE;
-    if (evt.button == 2)
-      return MouseButton.RIGHT;
-}
-
 class DragEvent {
-  // readonly type: "START" | "DRAG" | "STOP"
   readonly x: number;
   readonly y: number;
   readonly target: EventTarget;
