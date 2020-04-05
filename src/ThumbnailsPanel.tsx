@@ -1,9 +1,6 @@
 import { Thumbnail } from "./Thumbnail";
 import React from "react";
-// import * as panels from "./panels";
 import * as grid from "./Grid";
-
-let panelIndex = 0;
 
 export function ThumbnailsPanel() {
   
@@ -12,12 +9,7 @@ export function ThumbnailsPanel() {
     .then(response => response.blob())
     .then(blob => createImageBitmap(blob))
     .then(bitmap => {
-      console.log('opening')
-      grid.get().getPanel(panelIndex).setImage(bitmap);
-      grid.get().getPanel(panelIndex).fit();
-      panelIndex++;
-      if(panelIndex >= grid.get().getPanels().size)
-        panelIndex = 0;
+      grid.get().openImage(bitmap);
     })
   }
 

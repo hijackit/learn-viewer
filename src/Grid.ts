@@ -13,6 +13,7 @@ class Grid implements ActionListener {
   leftButtonTool: Tool = Tool.ZOOM;
   middleButtonTool: Tool = Tool.PAN;
   rightButtonTool: Tool = Tool.ROTATE;
+  selectedPanel:Panel|null;
 
   constructor(grid:HTMLDivElement) {
     this.mouseHandler = new MouseHandler(grid, this);
@@ -24,6 +25,8 @@ class Grid implements ActionListener {
   // ActionListener callback
   public onDrag(event: DragEvent): void {
     let targetPanel:Panel = this.cpanels.get(<HTMLCanvasElement>event.target);
+    this.setSelected(targetPanel);
+
     let targetPanels:Array<Panel> = this.linkPanels 
       ? this.getVisiblePanels()
       : [this.cpanels.get(<HTMLCanvasElement>event.target)];
@@ -59,18 +62,28 @@ class Grid implements ActionListener {
     }
   }
 
+  private setSelected(panel:Panel) {
+    this.selectedPanel = panel;
+    this.panels.forEach(panel => panel.setSelected(false));
+    panel.setSelected(true);
+  }
+
   // ActionListener callback
   public onClick(event: ClickEvent): void {
     const targetPanel = this.cpanels.get(<HTMLCanvasElement>event.target);
+    this.setSelected(targetPanel);
     targetPanel.onClick(event.x, event.y);
   }
 
   // ActionListener callback
   public onWheel(event: WheelEvent): void {
     const targetPanel = this.cpanels.get(<HTMLCanvasElement>event.target);
+    this.setSelected(targetPanel);
+
     let targetPanels:Array<Panel> = this.linkPanels 
       ? this.getVisiblePanels()
       : [this.cpanels.get(<HTMLCanvasElement>event.target)];
+
     targetPanels.forEach(panel => {
       let canvasX = event.x - targetPanel.canvas.offsetLeft;
       let canvasY = event.y - targetPanel.canvas.offsetTop;
@@ -125,8 +138,49 @@ class Grid implements ActionListener {
     return this.panels;
   }
 
-  getSelectedPanel() {
-    return this.panels.get(0);
+  public fit() {
+    if(this.linkPanels) {
+      this.panels.forEach(panel => panel.fit())
+    } else {
+      this.selectedPanel?.fit();
+    }
+  }
+
+  public actualSize() {
+    if(this.linkPanels) {
+      this.panels.forEach(panel => panel.setZoom(1))
+    } else {
+      this.selectedPanel?.setZoom(1);
+    }
+  }
+
+  public toggleHorizontalFlip() {
+    if(this.linkPanels) {
+      this.panels.forEach(panel => panel.toggleHorizontalFlip())
+    } else {
+      this.selectedPanel?.toggleHorizontalFlip();
+    }
+  }  
+  
+  public toggleVerticalFlip() {
+    if(this.linkPanels) {
+      this.panels.forEach(panel => panel.toggleVerticalFlip())
+    } else {
+      this.selectedPanel?.toggleVerticalFlip();
+    }
+  }
+
+  public openImage(image:ImageBitmap) {
+    let panels = Array.from(this.panels.values());
+    let firstEmptyPanel = panels.find(panel => panel.image == null);
+    if(firstEmptyPanel) {
+      firstEmptyPanel.setImage(image);
+      firstEmptyPanel.fit();
+      this.setSelected(firstEmptyPanel);
+    } else {
+      this.selectedPanel.setImage(image);
+      this.selectedPanel.fit();
+    }
   }
 
   // change the css grid rows/columns and hide exceeding canvas

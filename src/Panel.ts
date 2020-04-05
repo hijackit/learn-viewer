@@ -16,6 +16,7 @@ class Panel {
   imageRotation: number = 0; //degrees
   horizontalFlip: boolean = false;
   verticalFlip: boolean = false;
+  selected:boolean = false;
 
   constructor(canvas:HTMLCanvasElement, id:number) {
     this.id = id;
@@ -74,6 +75,10 @@ class Panel {
 
   public setImage(image:ImageBitmap) {
     this.image = image;
+  }
+
+  public setSelected(selected:boolean) {
+    this.selected = selected;
   }
 
   public fit() {
@@ -184,33 +189,35 @@ class Panel {
     ctx.drawImage(this.image,0, 0); 
     ctx.restore()
 
-    ctx.save();
+    if (this.selected) {
+      ctx.save();
 
-    // draw borders on the angles of the panel when selected
-    const lineWidth = Math.min(this.canvas.width, this.canvas.height) / 15;
-    ctx.strokeStyle = "#FFF";
-    ctx.moveTo(0, 0);
-    ctx.lineTo(lineWidth, 0);
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, lineWidth);
+      // draw borders on the angles of the panel when selected
+      const lineWidth = Math.min(this.canvas.width, this.canvas.height) / 15;
+      ctx.strokeStyle = "#FFF";
+      ctx.moveTo(0, 0);
+      ctx.lineTo(lineWidth, 0);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, lineWidth);
 
-    ctx.moveTo(this.canvas.width, 0);
-    ctx.lineTo(this.canvas.width - lineWidth, 0);
-    ctx.moveTo(this.canvas.width, 0);
-    ctx.lineTo(this.canvas.width, lineWidth);
+      ctx.moveTo(this.canvas.width, 0);
+      ctx.lineTo(this.canvas.width - lineWidth, 0);
+      ctx.moveTo(this.canvas.width, 0);
+      ctx.lineTo(this.canvas.width, lineWidth);
 
-    ctx.moveTo(this.canvas.width, this.canvas.height);
-    ctx.lineTo(this.canvas.width, this.canvas.height - lineWidth);
-    ctx.moveTo(this.canvas.width, this.canvas.height);
-    ctx.lineTo(this.canvas.width - lineWidth, this.canvas.height);
+      ctx.moveTo(this.canvas.width, this.canvas.height);
+      ctx.lineTo(this.canvas.width, this.canvas.height - lineWidth);
+      ctx.moveTo(this.canvas.width, this.canvas.height);
+      ctx.lineTo(this.canvas.width - lineWidth, this.canvas.height);
 
-    ctx.moveTo(0, this.canvas.height);
-    ctx.lineTo(lineWidth, this.canvas.height);
-    ctx.moveTo(0, this.canvas.height);
-    ctx.lineTo(0, this.canvas.height - lineWidth);
+      ctx.moveTo(0, this.canvas.height);
+      ctx.lineTo(lineWidth, this.canvas.height);
+      ctx.moveTo(0, this.canvas.height);
+      ctx.lineTo(0, this.canvas.height - lineWidth);
 
-    ctx.stroke();
-    ctx.restore();
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 }
 

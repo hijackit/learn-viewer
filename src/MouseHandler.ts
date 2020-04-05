@@ -61,14 +61,14 @@ class MouseHandler {
 
     element.onmouseup = (evt) => {
       evt.preventDefault();
-      this.mousedown = false;
+      // this.mousedown = false;
       const clientX = evt.clientX;
       const clientY = evt.clientY;
 
       if (this.dragging) {
         this.initialDrag = null;
         this.lastDrag = null;
-      } else {
+      } else if (this.mousedown) {
         listener.onClick({
           x:clientX,
           y:clientY,
@@ -77,6 +77,7 @@ class MouseHandler {
         })
       }
       this.dragging = false;
+      this.mousedown = false;
     }
 
     element.onwheel = (evt) => {

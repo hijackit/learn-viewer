@@ -16,8 +16,7 @@ export function OpenImageButton() {
         const image = new Image();
         image.onload = function () {
           createImageBitmap(image).then(bitmap => {
-            grid.get().getPanel(0).setImage(bitmap);
-            grid.get().getPanel(0).fit();
+            grid.get().openImage(bitmap);
           });
         };
         image.onerror = function (error) {
