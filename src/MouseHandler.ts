@@ -1,110 +1,175 @@
+import { MouseButton } from "./MouseButton";
+
+/**
+ * This class can be attached to an HTML Element in order to watch for mouse events and obtain actions.
+ * 
+ * @remarks
+ * This class processes low-level mouse events such as 
+ * - onmousedown
+ * - onmousemove
+ * - onmouseup
+ * - onwheel
+ * 
+ * and emits higher-order actions to the ActionListener:
+ * - onDrag
+ * - onClick
+ * - onWheel
+ */
 class MouseHandler {
-  canvas:HTMLCanvasElement;
+  element: HTMLElement;
+  listener: ActionListener;
   mousedown: boolean = false;
-  button: number;
+  mouseButton: MouseButton;
   dragging: boolean = false;
-  initialDrag:DragEvent|null = null;
-  lastDrag:DragEvent|null = null;
+  initialDrag: {x:number, y:number} | null = null;
+  lastDrag: {x:number, y:number} | null = null;
+  target: EventTarget;
 
-  constructor(canvas:HTMLCanvasElement, listener?:ActionListener) {
-    this.canvas = canvas;
+  constructor(element: HTMLElement, listener: ActionListener) {
+    this.element = element;
+    this.listener = listener;
 
-    canvas.onmousedown = (evt) => {
+    element.onmousedown = (evt) => {
       evt.preventDefault();
       this.mousedown = true;
-      this.button = evt.button;
+      this.mouseButton = this.getMouseButton(evt);
+      this.target = evt.target;
     }
 
-    canvas.onmousemove = (evt) => {
+    element.onmousemove = (evt) => {
       evt.preventDefault();
-      if(this.mousedown) {
-          if(this.dragging){
-              let dragEvent = new DragEvent("DRAG", evt.offsetX, evt.offsetY, this.button, this.initialDrag, this.lastDrag);
-              this.lastDrag = dragEvent;
-              listener?.onDrag(dragEvent);
-          } else {
-              let dragEvent = new DragEvent("START", evt.offsetX, evt.offsetY, this.button, null, null);
-              this.initialDrag = dragEvent;
-              this.lastDrag = dragEvent;
-              listener?.onDrag(dragEvent);
-          }
-          this.dragging = true;
+      const clientX = evt.clientX;
+      const clientY = evt.clientY;
+      if (this.mousedown) {
+        if (this.dragging) {
+          let dragEvent = new DragEvent({
+            x: clientX,
+            y: clientY,
+            mouseButton: this.mouseButton,
+            initialDrag: this.initialDrag,
+            lastDrag: this.lastDrag,
+            target: this.target
+          });
+          this.lastDrag = dragEvent;
+          listener.onDrag(dragEvent);
+        } else {
+          this.initialDrag = {x: clientX, y: clientY};
+        }
+        this.dragging = true;
       }
     }
 
-    canvas.onmouseup = (evt) => {
+    element.onmouseup = (evt) => {
       evt.preventDefault();
       this.mousedown = false;
-      if(this.dragging) {
-        listener?.onDrag(new DragEvent("STOP", evt.offsetX, evt.offsetY, this.button, this.initialDrag, this.lastDrag))
+      const clientX = evt.clientX;
+      const clientY = evt.clientY;
+
+      if (this.dragging) {
         this.initialDrag = null;
         this.lastDrag = null;
       } else {
-        listener?.onClick(evt.offsetX, evt.offsetY)
+        listener.onClick({
+          x:clientX,
+          y:clientY,
+          target: evt.target,
+          mouseButton: this.mouseButton,
+        })
       }
-  
       this.dragging = false;
     }
 
-    canvas.onwheel = (evt) => {
+    element.onwheel = (evt) => {
       evt.preventDefault();
-      listener?.onWheel(evt.offsetX, evt.offsetY, evt.deltaY);
+      const clientX = evt.clientX;
+      const clientY = evt.clientY;
+      const wheelEvent: WheelEvent = {
+        x: clientX, 
+        y: clientY, 
+        delta: evt.deltaY,
+        target: evt.target
+      }
+      listener.onWheel(wheelEvent);
     }
+  }
+
+  getMouseButton(evt:MouseEvent):MouseButton {
+    if (evt.button == 0)
+        return MouseButton.LEFT;
+      if (evt.button == 1)
+        return MouseButton.MIDDLE;
+      if (evt.button == 2)
+        return MouseButton.RIGHT;
   }
 }
 
 interface ActionListener {
-  onDrag(event:DragEvent):void;
-  onClick(x:number, y:number):void;
-  onWheel(x:number, y:number, delta:number):void;
+  onDrag(event: DragEvent): void;
+  onClick(event: ClickEvent): void;
+  onWheel(event: WheelEvent): void;
 }
 
-enum MouseButton {
-  LEFT, MIDDLE, RIGHT
+interface WheelEvent {
+  x:number,
+  y:number,
+  delta: number,
+  target: EventTarget
+}
+
+interface ClickEvent {
+  x:number,
+  y:number,
+  target: EventTarget,
+  mouseButton: MouseButton
+}
+
+interface DragEventProps {
+  x: number, 
+  y: number, 
+  mouseButton: MouseButton, 
+  initialDrag: {x:number, y:number} | null, 
+  lastDrag:  {x:number, y:number} | null, 
+  target:EventTarget | null
 }
 
 class DragEvent {
-  readonly type:"START"|"DRAG"|"STOP"
-  readonly x:number;
-  readonly y:number;
-  readonly mouseButton:MouseButton;
+  readonly x: number;
+  readonly y: number;
+  readonly target: EventTarget;
+  readonly mouseButton: MouseButton;
 
   // coordinates of the initial drag event
-  readonly initialDragEventX:number = 0;
-  readonly initialDragEventY:number = 0;
+  readonly initialDragEventX: number = 0;
+  readonly initialDragEventY: number = 0;
 
   // distance from the initial drag event
-  readonly initialDragEventDeltaX:number = 0;
-  readonly initialDragEventDeltaY:number = 0;
+  readonly initialDragEventDeltaX: number = 0;
+  readonly initialDragEventDeltaY: number = 0;
 
   // delta from the last drag event
-  readonly lastDragEventDeltaX:number = 0;
-  readonly lastDragEventDeltaY:number = 0;
+  readonly lastDragEventDeltaX: number = 0;
+  readonly lastDragEventDeltaY: number = 0;
 
-  constructor(type:"START"|"DRAG"|"STOP", x:number, y:number, button:number, initialDrag:DragEvent|null, lastDrag:DragEvent|null) {
-    this.x = x;
-    this.y = y;
-    this.type = type;
+  constructor(props: DragEventProps) {
+    this.x = props.x;
+    this.y = props.y;
+    // this.type = props.type;
+    this.mouseButton = props.mouseButton;
 
-    if(button == 0)
-      this.mouseButton=MouseButton.LEFT;
-    if(button == 1)
-      this.mouseButton=MouseButton.MIDDLE;
-    if(button == 2)
-      this.mouseButton=MouseButton.RIGHT;
-
-    if(initialDrag != null) {
-      this.initialDragEventX = initialDrag.x;
-      this.initialDragEventY = initialDrag.y;
-      this.initialDragEventDeltaX = this.x - initialDrag.x;
-      this.initialDragEventDeltaY = this.y - initialDrag.y;
+    if (props.initialDrag != null) {
+      this.initialDragEventX = props.initialDrag.x;
+      this.initialDragEventY = props.initialDrag.y;
+      this.initialDragEventDeltaX = this.x - props.initialDrag.x;
+      this.initialDragEventDeltaY = this.y - props.initialDrag.y;
     }
 
-    if (lastDrag != null) {
-      this.lastDragEventDeltaX = this.x - lastDrag.x;
-      this.lastDragEventDeltaY = this.y - lastDrag.y;
+    if (props.lastDrag != null) {
+      this.lastDragEventDeltaX = this.x - props.lastDrag.x;
+      this.lastDragEventDeltaY = this.y - props.lastDrag.y;
     }
+
+    this.target = props.target;
   }
 }
 
-export {MouseHandler, ActionListener, DragEvent, MouseButton}
+export { MouseHandler, ActionListener, DragEvent, ClickEvent, WheelEvent, MouseButton }

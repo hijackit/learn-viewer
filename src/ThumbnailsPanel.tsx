@@ -1,6 +1,9 @@
 import { Thumbnail } from "./Thumbnail";
 import React from "react";
-import { getPanel } from "./panels";
+// import * as panels from "./panels";
+import * as grid from "./Grid";
+
+let panelIndex = 0;
 
 export function ThumbnailsPanel() {
   
@@ -9,16 +12,22 @@ export function ThumbnailsPanel() {
     .then(response => response.blob())
     .then(blob => createImageBitmap(blob))
     .then(bitmap => {
-      getPanel(0).setImage(bitmap);
-      getPanel(0).fit();
+      console.log('opening')
+      grid.get().getPanel(panelIndex).setImage(bitmap);
+      grid.get().getPanel(panelIndex).fit();
+      panelIndex++;
+      if(panelIndex >= grid.get().getPanels().size)
+        panelIndex = 0;
     })
   }
 
-  return (<div className="left-column">
+  return (
+  <div>
     <Thumbnail onClick={() => openImage('images/hand_0.jpg')} title='Hands' />
     <Thumbnail onClick={() => openImage('images/camping.jpg')} title='Camping' />
     <Thumbnail onClick={() => openImage('images/dino.jpg')} title='Dino' />
     <Thumbnail onClick={() => openImage('images/rock.jpg')} title='Rockefeller' />
     <Thumbnail onClick={() => openImage('images/sf.jpg')} title='San Francisco' />
+    <Thumbnail onClick={() => openImage('images/mano_dx.jpg')} title='Right hand' />
   </div>);
 }

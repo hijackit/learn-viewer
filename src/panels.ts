@@ -26,4 +26,8 @@ function render() {
   panels.forEach(panel => panel.render());
 }
 
-export {newPanel, disposePanel, render, getPanel};
+function getPanels() {
+  return panels;
+}
+
+export {newPanel, disposePanel, render, getPanel, getPanels};

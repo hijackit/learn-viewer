@@ -2,55 +2,42 @@ import * as React from "react";
 import { ThumbnailsPanel } from "./ThumbnailsPanel";
 import { CanvasPanel } from "./CanvasPanel";
 import { OpenImageButton } from "./OpenImageButton";
-import { getPanel } from "./panels";
-import { Tool } from "./Panel";
+import { getPanel, getPanels } from "./panels";
+import { Tool } from "./Tool";
+import ButtonsToolbar from "./ButtonsToolbar";
+import styled from 'styled-components';
+import './index.css';
+import { GridPanel } from "./GridPanel";
+import * as grid from './Grid';
 
-export interface HelloProps { compiler: string; framework: string; }
+const FooterButton = styled.div`
+  display: inline-block;
+  width: 4em;
+  cursor: pointer;
+`
 
-export function App(props:HelloProps) {
-  const [mouseTool, setMouseTool] = React.useState('PAN');
-  const [verticalFlip, setVerticalFlip] = React.useState(false);
-  const [horizontalFlip, setHorizontalFlip] = React.useState(false);
-
+export function App() {
   return (
     <div className="grid-wrapper">
         <div className="header">ROSSI MARIO</div>
-        <ThumbnailsPanel />
+        <div className="left-column">
+          <ThumbnailsPanel />
+        </div>
         <div className="main-area">
-          <CanvasPanel id={0}/>
+          <GridPanel />
         </div>
         <div id="right-column">
-          <OpenImageButton />
-          <div className="toolbar-button" onClick={() => {getPanel(0)?.fit()}}>Fit</div>
-          <div className={'toolbar-button ' + (mouseTool=='PAN' ? 'selected' : '')} 
-            onClick={() => {
-              setMouseTool('PAN');
-              getPanel(0).setLeftButtonTool(Tool.PAN);
-              }}>Pan</div>
-          <div className={'toolbar-button ' + (mouseTool=='ZOOM' ? 'selected' : '')} 
-            onClick={() => {
-              setMouseTool('ZOOM');
-              getPanel(0).setLeftButtonTool(Tool.ZOOM);
-            }}>Zoom</div>
-          <div className={'toolbar-button ' + (mouseTool=='ROTATE' ? 'selected' : '')} 
-            onClick={() => {
-              setMouseTool('ROTATE');
-              getPanel(0).setLeftButtonTool(Tool.ROTATE);
-            }}>Rotate</div>
-          <div className={'toolbar-button'} 
-            onClick={() => {getPanel(0)?.setZoom(1)}}>1:1</div>
-          <div className={'toolbar-button ' + (horizontalFlip ? 'selected' : '')}
-            onClick={() => {
-              setHorizontalFlip(!horizontalFlip);
-              getPanel(0)?.toggleHorizontalFlip();
-            }}>H-Flip</div>
-          <div className={'toolbar-button ' + (verticalFlip ? 'selected' : '')}
-            onClick={() => {
-              setVerticalFlip(!verticalFlip);
-              getPanel(0)?.toggleVerticalFlip();
-            }}>V-Flip</div>
+          <ButtonsToolbar />
         </div>
-        <div className="footer">footer</div>
+        <div className="footer">
+          <FooterButton onClick={e=>grid.get().setLayout(1,1)}>1x1</FooterButton>
+          <FooterButton onClick={e=>grid.get().setLayout(1,2)}>1x2</FooterButton>
+          <FooterButton onClick={e=>grid.get().setLayout(2,1)}>2x1</FooterButton>
+          <FooterButton onClick={e=>grid.get().setLayout(2,2)}>2x2</FooterButton>
+          <FooterButton onClick={e=>grid.get().setLayout(2,3)}>2x3</FooterButton>
+          <FooterButton onClick={e=>grid.get().setLayout(3,2)}>3x2</FooterButton>
+          <FooterButton onClick={e=>grid.get().setLayout(3,3)}>3x3</FooterButton>
+        </div>
     </div>
   )
 }
