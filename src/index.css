@@ -11,7 +11,7 @@ body {
 
 .grid-wrapper {
   display: grid;
-  grid-template-columns: 10% auto 5%;
+  grid-template-columns: minmax(130px , 5%) auto minmax(90px , 5%);
   grid-auto-rows: 1.5rem auto 1.5rem;
   width: 100%;
   height: 100%;
