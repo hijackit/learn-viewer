@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, Children, Component } from "react";
 import { OpenImageButton } from "./OpenImageButton";
 import { Tool } from "./Tool";
 import * as grid from "./Grid";
@@ -56,7 +56,61 @@ function ButtonsToolbar() {
           setVerticalFlip(!verticalFlip);
           grid.get().toggleVerticalFlip();
         }}>V-Flip</div>
+
+      <DropleftButton >
+        <ChildButton />
+        <ChildButton />
+        <ChildButton />
+        <ChildButton />
+      </DropleftButton>
     </div>
+  )
+}
+
+function DropleftButton(props:any) {
+  const [show, setShow] = useState(false)
+  const ref = useRef(null)
+
+  return(
+    <div 
+      className='toolbar-button'
+      ref={ref}
+      style={{position:'relative'}}
+      onClick={() => {
+          setShow(!show)
+      }}>
+        layout
+        {show && <LeftPopover getParent={() => ref.current} > {props.children} </LeftPopover>}
+      </div>
+  )
+}
+
+interface ChildProps {
+  getParent: () => HTMLElement,
+  children: any
+}
+
+function LeftPopover(props: ChildProps) {
+
+  const[right, setRight] = useState(0)
+  const[height, setHeight] = useState(0)
+
+  useLayoutEffect(() => {
+    setRight(props.getParent().offsetWidth + 1)
+    setHeight(props.getParent().getBoundingClientRect().height)
+  })
+
+  return (
+    <div className='drop-left' style={{right: right, top: 0, height: height, width: '12em'}}>
+      {props.children}
+    </div>
+  )
+}
+
+
+function ChildButton() {
+  return (
+    <span className='dropdown-child-button'>1x1</span>
   )
 }
 
