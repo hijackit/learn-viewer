@@ -47,8 +47,9 @@ module.exports = {
 			inject: true,
 			template: path.resolve(__dirname, 'src', 'index.html'),
 		}),
-		new CopyPlugin([
-      { from: 'assets/images', to: 'images' }
-    ])
+		new CopyPlugin([{ 
+			from: 'assets/images', 
+			to: 'images' 
+		}])
 	]
 };
