@@ -95,25 +95,3 @@ body {
   grid-template-columns: repeat(var(--gridCols), 1fr);
   grid-template-rows: repeat(var(--gridRows), 1fr);
 }
-
-.drop-left {
-  position: absolute;
-  width: 17em;
-  margin: 0;
-  padding: 0;
-  background-color: #222;
-}
-
-.dropdown-child-button {
-  display: inline-block;
-  width: 3em;
-  background-color: #444;
-  height: 100%;
-  padding: 0.5em;
-  box-sizing:border-box;
-}
-
-.dropdown-child-button:hover {
-  background-color: #666;
-  cursor: pointer;
-}
