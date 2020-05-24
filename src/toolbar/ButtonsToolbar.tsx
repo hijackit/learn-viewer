@@ -1,7 +1,9 @@
 import React from "react";
 import { OpenImageButton } from "./OpenImageButton";
-import { Tool } from "./Tool";
-import * as grid from "./Grid";
+import { Tool } from "../Tool";
+import * as grid from "../Grid";
+import LayoutButton from './LayoutButton';
+
 
 function ButtonsToolbar() {
   const [mouseTool, setMouseTool] = React.useState('ZOOM');
@@ -12,6 +14,7 @@ function ButtonsToolbar() {
   return (
     <div>
       <OpenImageButton />
+      <LayoutButton />
 
       <div className={'toolbar-button ' + (link ? 'selected' : '')}
         onClick={() => { 
@@ -56,6 +59,7 @@ function ButtonsToolbar() {
           setVerticalFlip(!verticalFlip);
           grid.get().toggleVerticalFlip();
         }}>V-Flip</div>
+
     </div>
   )
 }

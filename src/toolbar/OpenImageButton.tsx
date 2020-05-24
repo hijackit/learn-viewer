@@ -1,5 +1,5 @@
 import React from "react";
-import * as grid from "./Grid";
+import * as grid from "../Grid";
 
 export function OpenImageButton() {
   const fileInput = React.useRef<HTMLInputElement>();
