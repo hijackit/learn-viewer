@@ -3,6 +3,7 @@ import { OpenImageButton } from "./OpenImageButton";
 import { Tool } from "../Tool";
 import * as grid from "../Grid";
 import LayoutButton from './LayoutButton';
+import { OpenDicomButton } from "./OpenDicomButton";
 
 
 function ButtonsToolbar() {
@@ -14,6 +15,7 @@ function ButtonsToolbar() {
   return (
     <div>
       <OpenImageButton />
+      <OpenDicomButton />
       <LayoutButton />
 
       <div className={'toolbar-button ' + (link ? 'selected' : '')}
