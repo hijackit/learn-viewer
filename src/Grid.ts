@@ -150,7 +150,11 @@ class Grid implements ActionListener {
 
   public render() {
     // render all visible panels only
-    this.getVisiblePanels().forEach(panel => panel.render());
+    const visiblePanels = this.getVisiblePanels();
+    for (let index = 0; index < visiblePanels.length; index++) {
+      const element = visiblePanels[index];
+      element.render();
+    }
   }
 
   private getVisiblePanels() {
