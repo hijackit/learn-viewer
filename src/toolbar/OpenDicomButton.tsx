@@ -2,6 +2,7 @@ import React from "react";
 import * as grid from "../Grid";
 import * as dicom from "../Dicom";
 import { parseDicom } from 'dicom-parser';
+import { DrawableDicomImage } from "../DrawableImage";
 
 export function OpenDicomButton() {
   const fileInput = React.useRef<HTMLInputElement>();
@@ -22,10 +23,10 @@ export function OpenDicomButton() {
           var arrayBuffer = reader.result;
           var byteArray = new Uint8Array(arrayBuffer);
           var dataSet = parseDicom(byteArray);
+          var image = new DrawableDicomImage(dataSet);
+          grid.get().openImage(image);
 
-          grid.get().openDicomImage(dataSet);
-          return;
-
+          /*
           var sopInstanceUid = dataSet.string('x0020000d');
           var rows = dataSet.uint16('x00280010');
           var columns = dataSet.uint16('x00280011');
@@ -95,7 +96,9 @@ export function OpenDicomButton() {
           console.time('putImageData');
           ctx.putImageData(imageData, 0, 0);
           console.timeEnd('putImageData');
-          grid.get().openImage(canvas);
+          const image = new DrawableCanvas(canvas);
+          grid.get().openImage(image);
+          */
         }
       };
 

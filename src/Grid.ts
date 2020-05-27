@@ -1,6 +1,8 @@
 import { Panel, Tool } from "./Panel";
 import { MouseHandler, ActionListener, DragEvent, ClickEvent, WheelEvent } from "./MouseHandler";
 import { MouseButton } from "./MouseButton";
+import { DataSet } from "dicom-parser";
+import { DrawableImage, DrawableDicomImage } from "./DrawableImage";
 
 class Grid implements ActionListener {
   grid:HTMLDivElement;
@@ -60,6 +62,13 @@ class Grid implements ActionListener {
           : event.lastDragEventDeltaY > 0 ? -amount : +amount;
         targetPanels.forEach(panel => panel.rotate(delta));
       break;
+      case Tool.WINDOW_LEVEL:
+        targetPanels.forEach(panel => {
+          if (panel.image instanceof DrawableDicomImage) {
+            panel.image.windowLevel(event.lastDragEventDeltaX, event.lastDragEventDeltaY);
+          }
+        });
+        break;
     }
   }
 
@@ -197,7 +206,7 @@ class Grid implements ActionListener {
     }
   }
 
-  public openImage(image:ImageBitmap) {
+  public openImage(image:DrawableImage) {
     let panels = Array.from(this.panels.values());
     let firstEmptyPanel = panels.find(panel => panel.image == null);
     if (firstEmptyPanel && !this.maximized) {
@@ -230,6 +239,7 @@ class Grid implements ActionListener {
       canvasWrapper.style.display = idx < visiblePanels ? '' : 'none';
     }
   }
+  
 }
 
 // the grid

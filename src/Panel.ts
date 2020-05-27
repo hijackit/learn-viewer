@@ -1,5 +1,6 @@
 import { scale, applyToPoint, inverse, compose, translate, rotate, Matrix, rotateDEG } from "transformation-matrix";
 import { Tool } from "./Tool";
+import { DrawableImage } from "./DrawableImage";
 
 interface Point {
   x: number,
@@ -9,7 +10,7 @@ interface Point {
 class Panel {
   id:number;
   canvas:HTMLCanvasElement;
-  image:ImageBitmap|null = null;
+  image: DrawableImage;
   imageTx: number = 0;
   imageTy: number = 0;
   imageScale: number = 1;
@@ -73,7 +74,7 @@ class Panel {
     this.imageRotation += degree;
   }
 
-  public setImage(image:ImageBitmap) {
+  public setImage(image: DrawableImage) {
     this.image = image;
   }
 
@@ -87,14 +88,14 @@ class Panel {
     }
 
     // find the correct scale to fit the image inside the panel
-    let scaleX = this.canvas.width/this.image.width;
-    let scaleY = this.canvas.height/this.image.height;
+    let scaleX = this.canvas.width/this.image.columns;
+    let scaleY = this.canvas.height/this.image.rows;
     let newScale = scaleX < scaleY ? scaleX : scaleY;
     let scaleMatrix = scale(newScale);
     
     // center the image horizontally and vertically
-    let imageCenterX = this.image.width/2;
-    let imageCenterY = this.image.height/2;
+    let imageCenterX = this.image.columns/2;
+    let imageCenterY = this.image.rows/2;
     let imageCenterOnCanvas = <Point>applyToPoint(scaleMatrix, {x: imageCenterX, y: imageCenterY});
 
     // move the center of the image onto the center of the canvas
@@ -148,6 +149,7 @@ class Panel {
   }
 
   public render() {
+
     let ctx = this.canvas.getContext('2d');
 
     // when the canvas has been resized, adjust the canvas dimensions accordingly
@@ -177,16 +179,17 @@ class Panel {
     ctx.scale(this.imageScale, this.imageScale);
 
     if (this.horizontalFlip) {
-      ctx.translate(this.image.width, 0);
+      ctx.translate(this.image.columns, 0);
       ctx.scale(-1, 1);
     }
 
     if (this.verticalFlip) {
-      ctx.translate(0, this.image.height);
+      ctx.translate(0, this.image.rows);
       ctx.scale(1, -1);
     }
 
-    ctx.drawImage(this.image,0, 0); 
+    // ctx.drawImage(this.image.get(), 0, 0);
+    this.image.draw(ctx);
     ctx.restore()
 
     if (this.selected) {
