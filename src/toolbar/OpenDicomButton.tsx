@@ -20,9 +20,13 @@ export function OpenDicomButton() {
         if (reader.result instanceof ArrayBuffer) {
           var arrayBuffer = reader.result;
           var byteArray = new Uint8Array(arrayBuffer);
-          var dataSet = parseDicom(byteArray);
-          var image = new DrawableDicomImage(dataSet);
-          grid.get().openImage(image);
+          try {
+            var dataSet = parseDicom(byteArray);
+            var image = new DrawableDicomImage(dataSet);
+            grid.get().openImage(image);
+          } catch (err) {
+            console.error('error loading selected file: maybe not a DICOM image', err)
+          }
         }
       };
 
