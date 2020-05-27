@@ -35,6 +35,12 @@ function ButtonsToolbar() {
           setMouseTool('PAN');
           grid.get().setLeftButton(Tool.PAN);
         }}>Pan</div>
+        
+        <div className={'toolbar-button ' + (mouseTool == 'WINDOW_LEVEL' ? 'selected' : '')}
+        onClick={() => {
+          setMouseTool('WINDOW_LEVEL');
+          grid.get().setLeftButton(Tool.WINDOW_LEVEL);
+        }}>W/L</div>
 
       <div className={'toolbar-button ' + (mouseTool == 'ROTATE' ? 'selected' : '')}
         onClick={() => {
