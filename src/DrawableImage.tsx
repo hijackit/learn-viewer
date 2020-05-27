@@ -70,15 +70,16 @@ export class DrawableDicomImage implements DrawableImage {
         console.time('backrender')
         var backCanvasCtx = this.backCanvas.getContext('2d');
         var backCanvasImageData = backCanvasCtx.getImageData(0, 0, this.backCanvas.width, this.backCanvas.height);
+        var data = backCanvasImageData.data;
 
-        for (let index = 0; index < backCanvasImageData.data.length; index += 4) {
+        for (var index = 0; index < data.length; index += 4) {
             let storedValue = this.pixelData[index / 4];
             let value = this.lut.get(this.windowCenter, this.windowWidth)[storedValue];
 
-            backCanvasImageData.data[index] = value;      // R
-            backCanvasImageData.data[index + 1] = value;  // G
-            backCanvasImageData.data[index + 2] = value;  // B
-            backCanvasImageData.data[index + 3] = 255;    // A
+            data[index] = value;      // R
+            data[index + 1] = value;  // G
+            data[index + 2] = value;  // B
+            data[index + 3] = 255;    // A
         }
         backCanvasCtx.putImageData(backCanvasImageData, 0, 0);
         context.drawImage(this.backCanvas, 0, 0);
