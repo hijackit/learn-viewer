@@ -11,3 +11,5 @@ The application is written in Typescript and React
 
 ## Build
 *  Run 'npm run bundle': the public folder will contain all the stuff
+
+Demo: https://hijackit.github.io/learn-viewer/
